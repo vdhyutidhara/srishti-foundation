@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGO Progress Dashboard – Wireframe</title>
+<style>
+/* ══ TOKENS ══ */
+:root {
+  --s0:       #f9f9f7;
+  --s1:       #fcfcfb;
+  --s2:       #f0efec;
+  --border:   rgba(11,11,11,.10);
+  --ink:      #0b0b0b;
+  --ink2:     #52514e;
+  --muted:    #898781;
+  --grid:     #e1e0d9;
+  --base:     #c3c2b7;
+  --c1:       #2a78d6;
+  --c2:       #eb6834;
+  --c3:       #1baf7a;
+  --c4:       #eda100;
+  --good:     #0ca30c;
+  --warn:     #fab219;
+  --serious:  #ec835a;
+  --crit:     #d03b3b;
+  --accent:   #2a78d6;
+  font-family: system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+}
+[data-theme="dark"] {
+  --s0:      #0d0d0d;
+  --s1:      #1a1a19;
+  --s2:      #2c2c2a;
+  --border:  rgba(255,255,255,.10);
+  --ink:     #ffffff;
+  --ink2:    #c3c2b7;
+  --muted:   #898781;
+  --grid:    #2c2c2a;
+  --base:    #383835;
+  --c1:      #3987e5;
+  --c2:      #d95926;
+  --c3:      #199e70;
+  --c4:      #c98500;
+  --good:    #0ca30c;
+  --warn:    #fab219;
+  --serious: #ec835a;
+  --crit:    #e66767;
+  --accent:  #3987e5;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--s0);color:var(--ink);min-height:100vh}
+
+/* ══ SHELL ══ */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:216px;min-width:216px;background:var(--s1);
+  border-right:1px solid var(--border);display:flex;
+  flex-direction:column;overflow-y:auto;
+}
+.sb-logo{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-mark{
+  width:30px;height:30px;border-radius:7px;background:var(--accent);
+  color:#fff;font-weight:700;font-size:14px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sb-name{font-weight:700;font-size:14px;line-height:1.2}
+.sb-sub{font-size:10px;color:var(--muted)}
+.sb-section{
+  padding:14px 10px 4px;font-size:10px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+}
+.sb-item{
+  display:flex;align-items:center;gap:9px;padding:7px 11px;
+  border-radius:6px;margin:1px 8px;cursor:pointer;
+  font-size:13px;color:var(--ink2);transition:background .1s;
+}
+.sb-item:hover{background:var(--s2)}
+.sb-item.on{background:var(--accent);color:#fff;font-weight:600}
+.sb-badge{
+  margin-left:auto;background:var(--c2);color:#fff;
+  border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;
+}
+.sb-foot{
+  margin-top:auto;padding:11px 15px;
+  border-top:1px solid var(--border);
+  font-size:11px;color:var(--muted);line-height:1.5;
+}
+
+/* ══ MAIN ══ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  height:52px;min-height:52px;background:var(--s1);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;padding:0 18px;
+}
+.topbar-title{font-size:15px;font-weight:700;flex:1}
+.pill{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:6px;padding:5px 10px;font-size:12px;
+  color:var(--ink2);cursor:pointer;white-space:nowrap;
+}
+.pill:hover{background:var(--grid)}
+.btn{
+  border:none;border-radius:6px;padding:6px 13px;
+  font-size:12px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{filter:brightness(1.1)}
+.btn-g{
+  background:transparent;border:1px solid var(--border);
+  color:var(--ink2);
+}
+.btn-g:hover{background:var(--s2)}
+.theme-btn{
+  width:30px;height:30px;border-radius:6px;
+  border:1px solid var(--border);background:var(--s2);
+  cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ══ FILTER BAR ══ */
+.fbar{
+  background:var(--s1);border-bottom:1px solid var(--border);
+  padding:9px 18px;display:flex;align-items:center;
+  gap:8px;flex-wrap:wrap;
+}
+.flabel{font-size:11px;font-weight:700;color:var(--muted);margin-right:1px}
+.chip{
+  border:1px solid var(--border);border-radius:20px;
+  padding:3px 11px;font-size:12px;cursor:pointer;
+  background:var(--s1);color:var(--ink2);transition:all .1s;
+}
+.chip:hover{background:var(--s2)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fsel{
+  border:1px solid var(--border);border-radius:6px;
+  padding:4px 9px;font-size:12px;background:var(--s1);
+  color:var(--ink);cursor:pointer;
+}
+.fsep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.cycle-grp{
+  margin-left:auto;display:flex;gap:5px;align-items:center;
+}
+.cbtn{
+  border:1px solid var(--border);background:var(--s1);
+  border-radius:6px;padding:3px 9px;font-size:12px;
+  cursor:pointer;color:var(--ink2);
+}
+.cbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ══ TABS ══ */
+.tabs{
+  display:flex;background:var(--s1);
+  border-bottom:2px solid var(--border);padding:0 18px;
+}
+.tab{
+  padding:12px 16px;font-size:13px;font-weight:600;
+  cursor:pointer;border-bottom:2px solid transparent;
+  margin-bottom:-2px;color:var(--muted);transition:all .12s;
+}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ══ CONTENT ══ */
+.content{
+  flex:1;overflow-y:auto;padding:18px;
+  display:flex;flex-direction:column;gap:18px;
+}
+
+/* ══ PAGE ══ */
+.page{display:none;flex-direction:column;gap:18px}
+.page.on{display:flex}
+
+/* ══ NOTE BAR ══ */
+.notebar{
+  background:#fffbe6;border:1px dashed #d4b800;
+  border-radius:6px;padding:6px 12px;
+  font-size:11px;color:#6b5000;
+}
+[data-theme="dark"] .notebar{background:#2a2200;border-color:#6b5000;color:#d4b800}
+
+/* ══ KPI ROW ══ */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:15px;
+}
+.kpi-lbl{
+  font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;
+}
+.kpi-val{font-size:26px;font-weight:700;line-height:1;margin-bottom:4px}
+.kpi-delta{font-size:11px;display:flex;align-items:center;gap:3px}
+.up{color:var(--good)} .dn{color:var(--crit)}
+
+/* sparkline */
+svg.spark{width:100%;height:28px;overflow:visible;margin-top:8px}
+
+/* ══ CARDS ══ */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+.card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:15px;
+}
+.card-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:12px}
+
+/* charts */
+svg.chart{width:100%;overflow:visible}
+
+/* ══ LEGEND ══ */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink2)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.leg-line{width:14px;height:2px;border-radius:1px;flex-shrink:0}
+
+/* ══ TABLE ══ */
+.tbl-wrap{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;
+}
+.tbl-bar{
+  padding:11px 15px;display:flex;align-items:center;
+  gap:9px;border-bottom:1px solid var(--border);flex-wrap:wrap;
+}
+.search{
+  border:1px solid var(--border);border-radius:6px;
+  padding:5px 9px;font-size:13px;background:var(--s0);
+  color:var(--ink);width:200px;
+}
+table{width:100%;border-collapse:collapse}
+thead th{
+  padding:9px 14px;text-align:left;font-size:10px;
+  font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;border-bottom:1px solid var(--grid);
+  background:var(--s1);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--grid)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--s2);cursor:pointer}
+tbody td{padding:9px 14px;font-size:13px}
+.tag{
+  display:inline-block;border-radius:4px;
+  padding:2px 7px;font-size:10px;font-weight:700;
+}
+.tg{background:#d4f5d4;color:#006300}
+.tw{background:#fef3cd;color:#a07000}
+.tr{background:#fde8e8;color:#a82020}
+[data-theme="dark"] .tg{background:#1a3a1a;color:#0ca30c}
+[data-theme="dark"] .tw{background:#3a2e00;color:#fab219}
+[data-theme="dark"] .tr{background:#3a1a1a;color:#e66767}
+
+.av{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;margin-right:7px;flex-shrink:0;
+}
+.namecell{display:flex;align-items:center}
+
+/* ══ PROGRESS BARS ══ */
+.plist{display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;justify-content:space-between;
+  margin-bottom:3px;font-size:12px}
+.ptrack{height:7px;background:var(--s2);border-radius:4px;overflow:hidden}
+.pfill{height:100%;border-radius:4px}
+.psub{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ══ PROFILE ══ */
+.prof-grid{display:grid;grid-template-columns:270px 1fr;gap:12px}
+.prof-side{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:18px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.prof-av{
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:700;margin:0 auto 2px;
+}
+.prof-name{font-size:15px;font-weight:700;text-align:center}
+.prof-sub{font-size:11px;color:var(--muted);text-align:center;margin-top:1px}
+.divider{height:1px;background:var(--border)}
+.meta{display:flex;flex-direction:column;gap:7px}
+.mr{display:flex;justify-content:space-between;font-size:12px}
+.mk{color:var(--muted)} .mv{font-weight:600}
+.ntitle{font-size:11px;font-weight:700;margin-bottom:4px}
+.note{
+  font-size:11px;padding:7px 9px;border-radius:6px;
+  display:flex;gap:5px;align-items:flex-start;line-height:1.5;
+}
+.npos{background:#d4f5d4}
+.nneg{background:#fde8e8}
+[data-theme="dark"] .npos{background:#1a3a1a}
+[data-theme="dark"] .nneg{background:#3a1a1a}
+
+/* ══ DONUT ══ */
+.ring-wrap{display:flex;align-items:center;justify-content:center;gap:20px;padding:6px 0}
+.ring-leg{display:flex;flex-direction:column;gap:7px}
+.ring-item{display:flex;align-items:center;gap:7px;font-size:12px}
+.ring-sw{width:10px;height:10px;border-radius:2px}
+
+/* ══ CALLOUT ══ */
+.callout{
+  background:var(--s2);border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;padding:9px 13px;
+  font-size:12px;color:var(--ink2);line-height:1.6;margin:8px 0;
+}
+
+/* ══ DOCS ══ */
+.docs-wrap{display:grid;grid-template-columns:190px 1fr;gap:18px}
+.docs-nav{display:flex;flex-direction:column;gap:2px}
+.dn-sec{
+  font-size:10px;font-weight:700;color:var(--muted);
+  padding:4px 9px 6px;letter-spacing:.07em;text-transform:uppercase;
+}
+.dn-item{
+  padding:6px 10px;border-radius:6px;font-size:13px;
+  cursor:pointer;color:var(--ink2);
+}
+.dn-item:hover{background:var(--s2)}
+.dn-item.on{background:var(--accent);color:#fff;font-weight:600}
+.doc-body{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:22px;
+}
+.doc-body h2{font-size:17px;font-weight:700;margin-bottom:7px}
+.doc-body h3{font-size:13px;font-weight:700;margin:16px 0 5px;color:var(--ink2)}
+.doc-body p{font-size:13px;line-height:1.7;color:var(--ink2);margin-bottom:9px}
+.doc-body ul{margin:0 0 9px 17px}
+.doc-body li{font-size:13px;line-height:1.7;color:var(--ink2)}
+.dstep{display:flex;gap:11px;margin-bottom:12px;align-items:flex-start}
+.dstep-n{
+  width:22px;height:22px;border-radius:50%;background:var(--accent);
+  color:#fff;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+.dstep-t{font-size:13px;font-weight:700;margin-bottom:2px}
+.dstep-d{font-size:12px;color:var(--ink2);line-height:1.6}
+
+/* ══ CYCLE TABLE ══ */
+.ctbl{width:100%;border-collapse:collapse}
+.ctbl th,.ctbl td{
+  padding:7px 11px;text-align:center;font-size:12px;
+  border-bottom:1px solid var(--grid);
+}
+.ctbl th{color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.ctbl td:first-child{text-align:left;font-weight:600}
+
+/* ══ DOWNLOAD PAGE ══ */
+.dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.dl-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:10px;padding:15px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.dl-icon{font-size:22px}
+.dl-title{font-size:13px;font-weight:700}
+.dl-desc{font-size:12px;color:var(--ink2);line-height:1.5;flex:1}
+.dl-btns{display:flex;flex-direction:column;gap:7px;margin-top:auto}
+
+/* ══ TOAST ══ */
+#toast{
+  position:fixed;bottom:22px;right:22px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:8px;padding:11px 16px;font-size:13px;font-weight:600;
+  box-shadow:0 4px 18px rgba(0,0,0,.15);z-index:9999;
+  color:var(--ink);display:none;
+}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--base);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-mark">N</div>
+    <div>
+      <div class="sb-name">NGO Portal</div>
+      <div class="sb-sub">Progress Dashboard</div>
+    </div>
+  </div>
+
+  <div class="sb-section">Overview</div>
+  <div class="sb-item on"  data-page="overview">&#9632; Dashboard</div>
+  <div class="sb-item"     data-page="students">&#9633; Students <span class="sb-badge">42</span></div>
+
+  <div class="sb-section">Reports</div>
+  <div class="sb-item" data-page="progress">&#9633; Cycle Progress</div>
+  <div class="sb-item" data-page="attendance">&#9633; Attendance</div>
+  <div class="sb-item" data-page="download">&#9633; Download Reports</div>
+
+  <div class="sb-section">Reference</div>
+  <div class="sb-item" data-page="docs">&#9633; Help &amp; Docs</div>
+
+  <div class="sb-foot">
+    Cycle 4 &middot; Oct–Dec 2025<br>Last sync: today 09:42
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-title" id="pg-title">Dashboard Overview</div>
+    <div class="pill">Cycle 4: Oct–Dec 2025 &#9660;</div>
+    <div class="pill">Centre: All &#9660;</div>
+    <button class="btn btn-g" onclick="toast('Report download started')">&#8595; Export</button>
+    <div class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">&#9681;</div>
+  </div>
+
+  <!-- PAGE TABS -->
+  <div class="tabs" id="tabs">
+    <div class="tab on"  data-page="overview">Overview</div>
+    <div class="tab"     data-page="students">Students</div>
+    <div class="tab"     data-page="progress">Cycle Progress</div>
+    <div class="tab"     data-page="attendance">Attendance</div>
+    <div class="tab"     data-page="download">Download</div>
+    <div class="tab"     data-page="profile" id="tab-profile" style="display:none">Profile</div>
+    <div class="tab"     data-page="docs">Help &amp; Docs</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="fbar">
+    <span class="flabel">Gender</span>
+    <div class="chip on"  onclick="chipToggle(this)">All</div>
+    <div class="chip"     onclick="chipToggle(this)">Male</div>
+    <div class="chip"     onclick="chipToggle(this)">Female</div>
+    <div class="fsep"></div>
+    <span class="flabel">Age</span>
+    <div class="chip on"  onclick="chipToggle(this)">All</div>
+    <div class="chip"     onclick="chipToggle(this)">6–10</div>
+    <div class="chip"     onclick="chipToggle(this)">11–15</div>
+    <div class="chip"     onclick="chipToggle(this)">16–21</div>
+    <div class="fsep"></div>
+    <span class="flabel">Disability</span>
+    <select class="fsel"><option>All types</option><option>Mild ID</option><option>Moderate ID</option><option>Severe ID</option></select>
+    <div class="cycle-grp">
+      <span class="flabel">Cycle</span>
+      <div class="cbtn"    onclick="cyclePick(this)">C1</div>
+      <div class="cbtn"    onclick="cyclePick(this)">C2</div>
+      <div class="cbtn"    onclick="cyclePick(this)">C3</div>
+      <div class="cbtn on" onclick="cyclePick(this)">C4</div>
+    </div>
+  </div>
+
+  <!-- ══ CONTENT ══ -->
+  <div class="content">
+
+    <!-- ─────────── PAGE: OVERVIEW ─────────── -->
+    <div id="page-overview" class="page on">
+      <div class="notebar">&#8505; Wireframe &mdash; all data is illustrative. Use tabs or sidebar to switch pages.</div>
+
+      <!-- KPI row -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-lbl">Total Students</div>
+          <div class="kpi-val">42</div>
+          <div class="kpi-delta up">&#9650; 4 vs Cycle 3</div>
+          <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none">
+            <polyline points="0,22 24,20 48,17 72,14 96,10 120,7"
+              fill="none" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Avg Attendance</div>
+          <div class="kpi-val">78<span style="font-size:15px;font-weight:400">%</span></div>
+          <div class="kpi-delta up">&#9650; 3% vs Cycle 3</div>
+          <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none">
+            <polyline points="0,18 24,20 48,15 72,12 96,16 120,10"
+              fill="none" stroke="#1baf7a" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Skills Mastered</div>
+          <div class="kpi-val">68<span style="font-size:15px;font-weight:400">%</span></div>
+          <div class="kpi-delta up">&#9650; 7% vs Cycle 3</div>
+          <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none">
+            <polyline points="0,24 24,21 48,18 72,15 96,12 120,8"
+              fill="none" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Need Support</div>
+          <div class="kpi-val" style="color:var(--crit)">8</div>
+          <div class="kpi-delta dn">&#9660; improved by 2 from C3</div>
+          <svg class="spark" viewBox="0 0 120 28" preserveAspectRatio="none">
+            <polyline points="0,8 24,10 48,12 72,14 96,12 120,8"
+              fill="none" stroke="#d03b3b" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Row 2: trend + gender bars -->
+      <div class="row2">
+        <div class="card">
+          <div class="card-title">Average skill score — all cycles</div>
+          <div class="card-sub">All students &middot; all domains</div>
+          <svg class="chart" viewBox="0 0 450 155" height="155">
+            <line x1="42" y1="18" x2="435" y2="18" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="53" x2="435" y2="53" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="88" x2="435" y2="88" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="128" x2="435" y2="128" stroke="#c3c2b7" stroke-width="1"/>
+            <text x="36" y="21"  text-anchor="end" font-size="9" fill="#898781">100</text>
+            <text x="36" y="56"  text-anchor="end" font-size="9" fill="#898781">75</text>
+            <text x="36" y="91"  text-anchor="end" font-size="9" fill="#898781">50</text>
+            <text x="36" y="131" text-anchor="end" font-size="9" fill="#898781">25</text>
+            <!-- area fill -->
+            <polygon points="80,100 180,88 280,74 380,60 380,128 80,128"
+              fill="#2a78d6" fill-opacity=".09"/>
+            <!-- actual line -->
+            <polyline points="80,100 180,88 280,74 380,60"
+              fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+            <!-- target dashed -->
+            <polyline points="80,112 180,104 280,92 380,75"
+              fill="none" stroke="#eb6834" stroke-width="2"
+              stroke-linejoin="round" stroke-dasharray="5,3"/>
+            <!-- dots -->
+            <circle cx="80"  cy="100" r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="180" cy="88"  r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="280" cy="74"  r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="380" cy="60"  r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <text x="386" y="57" font-size="9" fill="#2a78d6" font-weight="700">68%</text>
+            <!-- x labels -->
+            <text x="80"  y="143" text-anchor="middle" font-size="9" fill="#898781">C1</text>
+            <text x="180" y="143" text-anchor="middle" font-size="9" fill="#898781">C2</text>
+            <text x="280" y="143" text-anchor="middle" font-size="9" fill="#898781">C3</text>
+            <text x="380" y="143" text-anchor="middle" font-size="9" fill="#898781">C4</text>
+          </svg>
+          <div class="legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--c1)"></div>Actual</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--c2);background:repeating-linear-gradient(90deg,var(--c2) 0,var(--c2) 5px,transparent 5px,transparent 8px)"></div>Target</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Score by gender — Cycle 4</div>
+          <div class="card-sub">Average across all domains</div>
+          <svg class="chart" viewBox="0 0 200 155" height="155">
+            <line x1="36" y1="18" x2="188" y2="18" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="36" y1="53" x2="188" y2="53" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="36" y1="88" x2="188" y2="88" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="36" y1="128" x2="188" y2="128" stroke="#c3c2b7" stroke-width="1"/>
+            <text x="30" y="21"  text-anchor="end" font-size="8" fill="#898781">100</text>
+            <text x="30" y="56"  text-anchor="end" font-size="8" fill="#898781">75</text>
+            <text x="30" y="91"  text-anchor="end" font-size="8" fill="#898781">50</text>
+            <text x="30" y="131" text-anchor="end" font-size="8" fill="#898781">25</text>
+            <!-- bars -->
+            <rect x="50"  y="66" width="22" height="62" rx="4" fill="#2a78d6"/>
+            <text x="61"  y="62" text-anchor="middle" font-size="9" fill="#52514e">70%</text>
+            <text x="61"  y="143" text-anchor="middle" font-size="9" fill="#898781">Male</text>
+            <rect x="110" y="57" width="22" height="71" rx="4" fill="#eb6834"/>
+            <text x="121" y="53" text-anchor="middle" font-size="9" fill="#52514e">73%</text>
+            <text x="121" y="143" text-anchor="middle" font-size="9" fill="#898781">Female</text>
+            <rect x="160" y="80" width="22" height="48" rx="4" fill="#1baf7a"/>
+            <text x="171" y="76" text-anchor="middle" font-size="9" fill="#52514e">62%</text>
+            <text x="171" y="143" text-anchor="middle" font-size="9" fill="#898781">N/A</text>
+          </svg>
+          <div class="legend">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--c1)"></div>Male (24)</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--c2)"></div>Female (15)</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--c3)"></div>N/A (3)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: domains + support + age -->
+      <div class="row3">
+        <div class="card">
+          <div class="card-title">Skill domain scores — Cycle 4</div>
+          <div class="card-sub">Average mastery % per domain</div>
+          <svg class="chart" viewBox="0 0 280 170" height="170">
+            <!-- horizontal bar chart -->
+            <line x1="36" y1="165" x2="270" y2="165" stroke="#c3c2b7" stroke-width="1"/>
+            <!-- Communication 68% -->
+            <text x="30" y="28" text-anchor="end" font-size="9" fill="#52514e">Communication</text>
+            <rect x="36" y="17" width="130" height="13" rx="4" fill="#2a78d6"/>
+            <text x="170" y="27" font-size="8" fill="#52514e">68%</text>
+            <!-- Self-care 77% -->
+            <text x="30" y="55" text-anchor="end" font-size="9" fill="#52514e">Self-care</text>
+            <rect x="36" y="44" width="147" height="13" rx="4" fill="#2a78d6"/>
+            <text x="187" y="54" font-size="8" fill="#52514e">77%</text>
+            <!-- Mobility 60% -->
+            <text x="30" y="82" text-anchor="end" font-size="9" fill="#52514e">Mobility</text>
+            <rect x="36" y="71" width="115" height="13" rx="4" fill="#2a78d6"/>
+            <text x="155" y="81" font-size="8" fill="#52514e">60%</text>
+            <!-- Cognition 51% -->
+            <text x="30" y="109" text-anchor="end" font-size="9" fill="#52514e">Cognition</text>
+            <rect x="36" y="98" width="97" height="13" rx="4" fill="#ec835a"/>
+            <text x="137" y="108" font-size="8" fill="#52514e">51%</text>
+            <!-- Social 73% -->
+            <text x="30" y="136" text-anchor="end" font-size="9" fill="#52514e">Social</text>
+            <rect x="36" y="125" width="139" height="13" rx="4" fill="#2a78d6"/>
+            <text x="179" y="135" font-size="8" fill="#52514e">73%</text>
+          </svg>
+        </div>
+
+        <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+          <div>
+            <div class="card-title">Needing support</div>
+            <div class="card-sub">Below 40% in any domain</div>
+          </div>
+          <div style="text-align:center;padding:12px 0">
+            <div style="font-size:46px;font-weight:700;color:var(--crit);line-height:1">8</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px">of 42 students</div>
+          </div>
+          <div class="plist">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:1px">BY DOMAIN</div>
+            <div>
+              <div class="prow"><span style="font-size:11px">Cognition</span><span style="font-size:11px;font-weight:700;color:var(--crit)">5</span></div>
+              <div class="ptrack"><div class="pfill" style="width:62%;background:var(--crit)"></div></div>
+            </div>
+            <div>
+              <div class="prow"><span style="font-size:11px">Mobility</span><span style="font-size:11px;font-weight:700;color:var(--serious)">2</span></div>
+              <div class="ptrack"><div class="pfill" style="width:25%;background:var(--serious)"></div></div>
+            </div>
+            <div>
+              <div class="prow"><span style="font-size:11px">Social</span><span style="font-size:11px;font-weight:700;color:var(--warn)">1</span></div>
+              <div class="ptrack"><div class="pfill" style="width:13%;background:var(--warn)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Age groups</div>
+          <div class="card-sub">Students enrolled</div>
+          <svg class="chart" viewBox="0 0 130 155" height="155">
+            <line x1="20" y1="128" x2="120" y2="128" stroke="#c3c2b7" stroke-width="1"/>
+            <rect x="24"  y="75"  width="18" height="53" rx="4" fill="#2a78d6"/>
+            <text x="33"  y="71"  text-anchor="middle" font-size="9" fill="#52514e">11</text>
+            <rect x="52"  y="57"  width="18" height="71" rx="4" fill="#2a78d6" fill-opacity=".75"/>
+            <text x="61"  y="53"  text-anchor="middle" font-size="9" fill="#52514e">15</text>
+            <rect x="80"  y="87"  width="18" height="41" rx="4" fill="#2a78d6" fill-opacity=".5"/>
+            <text x="89"  y="83"  text-anchor="middle" font-size="9" fill="#52514e">9</text>
+            <rect x="108" y="107" width="18" height="21" rx="4" fill="#2a78d6" fill-opacity=".3"/>
+            <text x="117" y="103" text-anchor="middle" font-size="9" fill="#52514e">7</text>
+            <text x="33"  y="143" text-anchor="middle" font-size="8" fill="#898781">6–10</text>
+            <text x="61"  y="143" text-anchor="middle" font-size="8" fill="#898781">11–15</text>
+            <text x="89"  y="143" text-anchor="middle" font-size="8" fill="#898781">16–18</text>
+            <text x="117" y="143" text-anchor="middle" font-size="8" fill="#898781">19–21</text>
+          </svg>
+        </div>
+      </div>
+    </div><!-- /overview -->
+
+
+    <!-- ─────────── PAGE: STUDENTS ─────────── -->
+    <div id="page-students" class="page">
+      <div class="notebar">&#8505; Students list. Click any row to open that student's profile.</div>
+      <div class="tbl-wrap">
+        <div class="tbl-bar">
+          <input class="search" placeholder="Search by name or ID&hellip;" oninput="filterTable(this.value)"/>
+          <select class="fsel"><option>All domains</option><option>Communication</option><option>Self-care</option><option>Cognition</option></select>
+          <select class="fsel"><option>All statuses</option><option>On Track</option><option>Excellent</option><option>Needs Support</option></select>
+          <div style="margin-left:auto;display:flex;gap:7px">
+            <button class="btn btn-g" onclick="toast('CSV download started')">&#8595; CSV</button>
+            <button class="btn btn-g" onclick="toast('PDF download started')">&#8595; PDF</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th><th>ID</th><th>Age</th><th>Gender</th>
+              <th>Disability</th><th>Comm.</th><th>Self-care</th><th>Cognition</th>
+              <th>Attendance</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="stbody"></tbody>
+        </table>
+      </div>
+    </div><!-- /students -->
+
+
+    <!-- ─────────── PAGE: CYCLE PROGRESS ─────────── -->
+    <div id="page-progress" class="page">
+      <div class="notebar">&#8505; Cycle-over-cycle comparison. Each cycle shows improvement relative to previous.</div>
+
+      <div class="row2">
+        <div class="card">
+          <div class="card-title">Score trend — all cycles (by gender)</div>
+          <div class="card-sub">Average across all domains</div>
+          <svg class="chart" viewBox="0 0 440 160" height="160">
+            <line x1="42" y1="16" x2="420" y2="16" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="50" x2="420" y2="50" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="88" x2="420" y2="88" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="130" x2="420" y2="130" stroke="#c3c2b7" stroke-width="1"/>
+            <text x="36" y="19"  text-anchor="end" font-size="9" fill="#898781">100</text>
+            <text x="36" y="53"  text-anchor="end" font-size="9" fill="#898781">75</text>
+            <text x="36" y="91"  text-anchor="end" font-size="9" fill="#898781">50</text>
+            <text x="36" y="133" text-anchor="end" font-size="9" fill="#898781">25</text>
+            <!-- Male -->
+            <polyline points="80,104 200,92 320,78 400,64"
+              fill="none" stroke="#2a78d6" stroke-width="2"/>
+            <circle cx="80"  cy="104" r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="200" cy="92"  r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="320" cy="78"  r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="400" cy="64"  r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+            <text x="406" y="61" font-size="9" fill="#2a78d6" font-weight="700">70%</text>
+            <!-- Female -->
+            <polyline points="80,100 200,84 320,70 400,56"
+              fill="none" stroke="#eb6834" stroke-width="2"/>
+            <circle cx="80"  cy="100" r="4" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="200" cy="84"  r="4" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="320" cy="70"  r="4" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+            <circle cx="400" cy="56"  r="5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+            <text x="406" y="53" font-size="9" fill="#eb6834" font-weight="700">73%</text>
+            <!-- x -->
+            <text x="80"  y="146" text-anchor="middle" font-size="9" fill="#898781">Cycle 1</text>
+            <text x="200" y="146" text-anchor="middle" font-size="9" fill="#898781">Cycle 2</text>
+            <text x="320" y="146" text-anchor="middle" font-size="9" fill="#898781">Cycle 3</text>
+            <text x="400" y="146" text-anchor="middle" font-size="9" fill="#898781">Cycle 4</text>
+          </svg>
+          <div class="legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--c1)"></div>Male avg.</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--c2)"></div>Female avg.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">C3 &#8594; C4 change per domain</div>
+          <div class="card-sub">Percentage point delta</div>
+          <svg class="chart" viewBox="0 0 210 160" height="160">
+            <line x1="105" y1="10" x2="105" y2="150" stroke="#c3c2b7" stroke-width="1" stroke-dasharray="3,3"/>
+            <line x1="30"  y1="150" x2="200" y2="150" stroke="#c3c2b7" stroke-width="1"/>
+            <!-- positive -->
+            <rect x="106" y="20" width="68" height="13" rx="4" fill="#1baf7a"/>
+            <text x="178" y="30" font-size="9" fill="#1baf7a" font-weight="700">+7%</text>
+            <rect x="106" y="43" width="49" height="13" rx="4" fill="#1baf7a"/>
+            <text x="159" y="53" font-size="9" fill="#1baf7a" font-weight="700">+5%</text>
+            <rect x="106" y="66" width="34" height="13" rx="4" fill="#1baf7a"/>
+            <text x="144" y="76" font-size="9" fill="#1baf7a" font-weight="700">+3%</text>
+            <!-- negative -->
+            <rect x="68"  y="89" width="37" height="13" rx="4" fill="#e34948"/>
+            <text x="64"  y="99" font-size="9" fill="#e34948" font-weight="700" text-anchor="end">&minus;4%</text>
+            <rect x="90"  y="112" width="15" height="13" rx="4" fill="#e34948"/>
+            <text x="86"  y="122" font-size="9" fill="#e34948" font-weight="700" text-anchor="end">&minus;1%</text>
+            <!-- labels -->
+            <text x="101" y="30"  text-anchor="end" font-size="9" fill="#52514e">Skill score</text>
+            <text x="101" y="53"  text-anchor="end" font-size="9" fill="#52514e">Attendance</text>
+            <text x="101" y="76"  text-anchor="end" font-size="9" fill="#52514e">Self-care</text>
+            <text x="101" y="99"  text-anchor="end" font-size="9" fill="#52514e">Cognition</text>
+            <text x="101" y="122" text-anchor="end" font-size="9" fill="#52514e">Mobility</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div class="card-title">Student-level cycle comparison</div>
+            <div class="card-sub">Overall score — all cycles</div>
+          </div>
+          <button class="btn btn-g" style="font-size:12px" onclick="toast('Export started')">&#8595; Export</button>
+        </div>
+        <table class="ctbl">
+          <thead><tr><th>Student</th><th>C1</th><th>C2</th><th>C3</th><th>C4</th><th>Change</th></tr></thead>
+          <tbody>
+            <tr><td>Arjun S.</td><td>52%</td><td>59%</td><td>64%</td><td>71%</td><td style="color:var(--good);font-weight:700">&#9650; +7%</td></tr>
+            <tr><td>Priya M.</td><td>48%</td><td>55%</td><td>61%</td><td>73%</td><td style="color:var(--good);font-weight:700">&#9650; +12%</td></tr>
+            <tr><td>Ravi K.</td><td>60%</td><td>62%</td><td>65%</td><td>68%</td><td style="color:var(--good);font-weight:700">&#9650; +3%</td></tr>
+            <tr><td>Deepa S.</td><td>35%</td><td>38%</td><td>41%</td><td>37%</td><td style="color:var(--crit);font-weight:700">&#9660; &minus;4%</td></tr>
+            <tr><td>Suresh T.</td><td>55%</td><td>60%</td><td>67%</td><td>74%</td><td style="color:var(--good);font-weight:700">&#9650; +7%</td></tr>
+            <tr><td>Meena L.</td><td>42%</td><td>45%</td><td>50%</td><td>50%</td><td style="color:var(--muted);font-weight:700">&mdash; 0%</td></tr>
+            <tr><td>Anita K.</td><td>50%</td><td>55%</td><td>59%</td><td>63%</td><td style="color:var(--good);font-weight:700">&#9650; +4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /progress -->
+
+
+    <!-- ─────────── PAGE: ATTENDANCE ─────────── -->
+    <div id="page-attendance" class="page">
+      <div class="notebar">&#8505; Attendance is visible on desktop only — excluded from the mobile app for privacy.</div>
+
+      <div class="row2">
+        <div class="card">
+          <div class="card-title">Monthly attendance — Cycle 4</div>
+          <div class="card-sub">Present / Absent / Leave (stacked)</div>
+          <svg class="chart" viewBox="0 0 430 155" height="155">
+            <line x1="42" y1="18" x2="415" y2="18" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="53" x2="415" y2="53" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="88" x2="415" y2="88" stroke="#e1e0d9" stroke-width="1"/>
+            <line x1="42" y1="128" x2="415" y2="128" stroke="#c3c2b7" stroke-width="1"/>
+            <text x="36" y="21"  text-anchor="end" font-size="9" fill="#898781">100%</text>
+            <text x="36" y="56"  text-anchor="end" font-size="9" fill="#898781">75%</text>
+            <text x="36" y="91"  text-anchor="end" font-size="9" fill="#898781">50%</text>
+            <text x="36" y="131" text-anchor="end" font-size="9" fill="#898781">25%</text>
+            <!-- Oct stacked -->
+            <rect x="70"  y="50"  width="24" height="78" rx="4" fill="#1baf7a"/>
+            <rect x="70"  y="42"  width="24" height="8"  rx="0" fill="#e34948"/>
+            <rect x="70"  y="34"  width="24" height="8"  rx="4" fill="#eda100"/>
+            <!-- Nov -->
+            <rect x="150" y="54"  width="24" height="74" rx="4" fill="#1baf7a"/>
+            <rect x="150" y="46"  width="24" height="8"  rx="0" fill="#e34948"/>
+            <rect x="150" y="38"  width="24" height="8"  rx="4" fill="#eda100"/>
+            <!-- Dec -->
+            <rect x="230" y="46"  width="24" height="82" rx="4" fill="#1baf7a"/>
+            <rect x="230" y="38"  width="24" height="8"  rx="0" fill="#e34948"/>
+            <rect x="230" y="30"  width="24" height="8"  rx="4" fill="#eda100"/>
+            <text x="82"  y="143" text-anchor="middle" font-size="9" fill="#898781">Oct</text>
+            <text x="162" y="143" text-anchor="middle" font-size="9" fill="#898781">Nov</text>
+            <text x="242" y="143" text-anchor="middle" font-size="9" fill="#898781">Dec</text>
+          </svg>
+          <div class="legend">
+            <div class="leg-item"><div class="leg-dot" style="background:#1baf7a"></div>Present</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#e34948"></div>Absent</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#eda100"></div>Leave</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Attendance breakdown — Cycle 4</div>
+          <div class="card-sub">All students</div>
+          <div class="ring-wrap">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="42" fill="none" stroke="#e1e0d9" stroke-width="15"/>
+              <circle cx="55" cy="55" r="42" fill="none" stroke="#1baf7a" stroke-width="15"
+                stroke-dasharray="206 264" stroke-dashoffset="66" stroke-linecap="butt"/>
+              <circle cx="55" cy="55" r="42" fill="none" stroke="#eda100" stroke-width="15"
+                stroke-dasharray="32 264" stroke-dashoffset="-140" stroke-linecap="butt"/>
+              <circle cx="55" cy="55" r="42" fill="none" stroke="#e34948" stroke-width="15"
+                stroke-dasharray="26 264" stroke-dashoffset="-172" stroke-linecap="butt"/>
+              <text x="55" y="51" text-anchor="middle" font-size="16" font-weight="700" fill="#0b0b0b">78%</text>
+              <text x="55" y="63" text-anchor="middle" font-size="8" fill="#898781">Present</text>
+            </svg>
+            <div class="ring-leg">
+              <div class="ring-item"><div class="ring-sw" style="background:#1baf7a"></div>Present 78%</div>
+              <div class="ring-item"><div class="ring-sw" style="background:#eda100"></div>Leave 12%</div>
+              <div class="ring-item"><div class="ring-sw" style="background:#e34948"></div>Absent 10%</div>
+            </div>
+          </div>
+          <div class="callout">Attendance data is hidden in the mobile app. It appears here on desktop only.</div>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <div class="tbl-bar">
+          <span style="font-size:13px;font-weight:700">Students with attendance below 60%</span>
+          <button class="btn btn-g" style="margin-left:auto;font-size:12px" onclick="toast('Export started')">&#8595; Export</button>
+        </div>
+        <table>
+          <thead><tr><th>Student</th><th>C4 Att.</th><th>C3 Att.</th><th>Change</th><th>Reason noted</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="namecell"><div class="av">DS</div>Deepa S.</div></td>
+              <td>44%</td><td>51%</td>
+              <td style="color:var(--crit);font-weight:700">&#9660; &minus;7%</td>
+              <td>Health</td><td><span class="tag tr">Review needed</span></td>
+            </tr>
+            <tr>
+              <td><div class="namecell"><div class="av">RK</div>Ravi K.</div></td>
+              <td>55%</td><td>58%</td>
+              <td style="color:var(--crit);font-weight:700">&#9660; &minus;3%</td>
+              <td>Transport</td><td><span class="tag tw">Monitor</span></td>
+            </tr>
+            <tr>
+              <td><div class="namecell"><div class="av">ML</div>Meena L.</div></td>
+              <td>58%</td><td>60%</td>
+              <td style="color:var(--crit);font-weight:700">&#9660; &minus;2%</td>
+              <td>Family</td><td><span class="tag tw">Monitor</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /attendance -->
+
+
+    <!-- ─────────── PAGE: DOWNLOAD ─────────── -->
+    <div id="page-download" class="page">
+      <div class="notebar">&#8505; All report formats available here. PDF is parent-friendly; Excel is for internal analysis.</div>
+
+      <div class="dl-grid">
+        <div class="dl-card">
+          <div class="dl-icon">&#128202;</div>
+          <div class="dl-title">Summary Report</div>
+          <div class="dl-desc">All students, all domains, current cycle. One-page overview ideal for parent meetings and trustee presentations.</div>
+          <div class="dl-btns">
+            <button class="btn btn-p" style="justify-content:center" onclick="toast('PDF download started')">&#8595; Download PDF</button>
+            <button class="btn btn-g" style="justify-content:center" onclick="toast('Excel download started')">&#8595; Download Excel</button>
+          </div>
+        </div>
+        <div class="dl-card">
+          <div class="dl-icon">&#128200;</div>
+          <div class="dl-title">Cycle Comparison Report</div>
+          <div class="dl-desc">All students, all cycles. Trend lines and delta arrows show whether each student improved, held steady, or declined.</div>
+          <div class="dl-btns">
+            <button class="btn btn-p" style="justify-content:center" onclick="toast('PDF download started')">&#8595; Download PDF</button>
+            <button class="btn btn-g" style="justify-content:center" onclick="toast('Excel download started')">&#8595; Download Excel</button>
+          </div>
+        </div>
+        <div class="dl-card">
+          <div class="dl-icon">&#128100;</div>
+          <div class="dl-title">Individual Student Report</div>
+          <div class="dl-desc">Full profile: scores, attendance, teacher notes (+/&minus;), and cycle history. One student at a time — hand to a parent.</div>
+          <div style="margin-top:4px">
+            <select class="fsel" style="width:100%"><option>Select student&hellip;</option><option>Arjun S.</option><option>Priya M.</option><option>Ravi K.</option><option>Deepa S.</option></select>
+          </div>
+          <div class="dl-btns">
+            <button class="btn btn-p" style="justify-content:center" onclick="toast('PDF download started')">&#8595; Download PDF</button>
+            <button class="btn btn-g" style="justify-content:center" onclick="toast('Excel download started')">&#8595; Download Excel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Custom report builder</div>
+        <div class="card-sub">Choose sections to include, then generate</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" checked> Skill scores</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" checked> Attendance</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox"> Cycle comparison</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" checked> Student notes (+/&minus;)</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox"> Gender / age breakdown</label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox"> Support needs summary</label>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-p" onclick="toast('Custom PDF started')">&#8595; Generate PDF</button>
+          <button class="btn btn-g" onclick="toast('Custom Excel started')">&#8595; Generate Excel</button>
+        </div>
+      </div>
+    </div><!-- /download -->
+
+
+    <!-- ─────────── PAGE: STUDENT PROFILE ─────────── -->
+    <div id="page-profile" class="page">
+      <div class="notebar">&#8505; Student profile. Reached by clicking a row in the Students list.</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:2px">
+        <button class="btn btn-g" style="font-size:12px" onclick="nav('students')">&#8592; Back to Students</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-g" style="font-size:12px" onclick="toast('Profile PDF started')">&#8595; Download PDF</button>
+      </div>
+
+      <div class="prof-grid">
+        <div class="prof-side">
+          <div class="prof-av">AS</div>
+          <div class="prof-name">Arjun S.</div>
+          <div class="prof-sub">ID #0014 &middot; Male &middot; Age 13</div>
+          <div class="divider"></div>
+          <div class="meta">
+            <div class="mr"><span class="mk">Disability</span><span class="mv">Mild ID</span></div>
+            <div class="mr"><span class="mk">Centre</span><span class="mv">Koramangala</span></div>
+            <div class="mr"><span class="mk">Enrolled</span><span class="mv">Jan 2023</span></div>
+            <div class="mr"><span class="mk">C4 Attendance</span><span class="mv" style="color:var(--good)">82%</span></div>
+            <div class="mr"><span class="mk">Overall score</span><span class="mv">71%</span></div>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <div class="ntitle" style="color:var(--good)">&#10003; Strengths</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:5px">
+              <div class="note npos"><span>+</span>Excellent verbal communication; initiates conversations independently</div>
+              <div class="note npos"><span>+</span>Self-care fully independent — dressing and hygiene this cycle</div>
+              <div class="note npos"><span>+</span>High motivation; responds well to positive reinforcement</div>
+            </div>
+          </div>
+          <div>
+            <div class="ntitle" style="color:var(--crit)">&#10007; Needs support</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:5px">
+              <div class="note nneg"><span>&minus;</span>Abstract reasoning remains difficult; needs task-breaking scaffolding</div>
+              <div class="note nneg"><span>&minus;</span>Attention sustainability below 20 min; fatigue noted in afternoons</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card">
+            <div class="card-title">Domain scores — Cycle 4</div>
+            <div class="card-sub">vs peer group average</div>
+            <div class="plist" style="margin-top:8px">
+              <div>
+                <div class="prow"><span>Communication</span><span style="font-weight:700">80%</span></div>
+                <div class="ptrack"><div class="pfill" style="width:80%;background:var(--c1)"></div></div>
+                <div class="psub">Peer avg 68% &nbsp; &#9650; above</div>
+              </div>
+              <div>
+                <div class="prow"><span>Self-care</span><span style="font-weight:700">85%</span></div>
+                <div class="ptrack"><div class="pfill" style="width:85%;background:var(--c1)"></div></div>
+                <div class="psub">Peer avg 77% &nbsp; &#9650; above</div>
+              </div>
+              <div>
+                <div class="prow"><span>Mobility</span><span style="font-weight:700">65%</span></div>
+                <div class="ptrack"><div class="pfill" style="width:65%;background:var(--c3)"></div></div>
+                <div class="psub">Peer avg 60% &nbsp; &#9650; above</div>
+              </div>
+              <div>
+                <div class="prow"><span>Cognition</span><span style="font-weight:700;color:var(--serious)">44%</span></div>
+                <div class="ptrack"><div class="pfill" style="width:44%;background:var(--serious)"></div></div>
+                <div class="psub">Peer avg 51% &nbsp; &#9660; below &mdash; flag for support</div>
+              </div>
+              <div>
+                <div class="prow"><span>Social</span><span style="font-weight:700">75%</span></div>
+                <div class="ptrack"><div class="pfill" style="width:75%;background:var(--c1)"></div></div>
+                <div class="psub">Peer avg 73% &nbsp; &#9650; above</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Overall score — cycle history</div>
+            <div class="card-sub">Arjun S. &middot; C1 through C4</div>
+            <svg class="chart" viewBox="0 0 420 120" height="120">
+              <line x1="42" y1="14" x2="400" y2="14" stroke="#e1e0d9" stroke-width="1"/>
+              <line x1="42" y1="44" x2="400" y2="44" stroke="#e1e0d9" stroke-width="1"/>
+              <line x1="42" y1="74" x2="400" y2="74" stroke="#e1e0d9" stroke-width="1"/>
+              <line x1="42" y1="104" x2="400" y2="104" stroke="#c3c2b7" stroke-width="1"/>
+              <text x="36" y="17"  text-anchor="end" font-size="8" fill="#898781">100</text>
+              <text x="36" y="47"  text-anchor="end" font-size="8" fill="#898781">75</text>
+              <text x="36" y="77"  text-anchor="end" font-size="8" fill="#898781">50</text>
+              <text x="36" y="107" text-anchor="end" font-size="8" fill="#898781">25</text>
+              <polygon points="80,80 180,68 300,58 380,44 380,104 80,104"
+                fill="#2a78d6" fill-opacity=".09"/>
+              <polyline points="80,80 180,68 300,58 380,44"
+                fill="none" stroke="#2a78d6" stroke-width="2"/>
+              <circle cx="80"  cy="80" r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+              <circle cx="180" cy="68" r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+              <circle cx="300" cy="58" r="4" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+              <circle cx="380" cy="44" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+              <text x="386" y="41" font-size="9" fill="#2a78d6" font-weight="700">71%</text>
+              <text x="80"  y="116" text-anchor="middle" font-size="8" fill="#898781">C1 52%</text>
+              <text x="180" y="116" text-anchor="middle" font-size="8" fill="#898781">C2 59%</text>
+              <text x="300" y="116" text-anchor="middle" font-size="8" fill="#898781">C3 64%</text>
+              <text x="380" y="116" text-anchor="middle" font-size="8" fill="#898781">C4 71%</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div><!-- /profile -->
+
+
+    <!-- ─────────── PAGE: DOCS ─────────── -->
+    <div id="page-docs" class="page">
+      <div class="notebar">&#8505; Built-in help documentation — no external link needed. Staff read this directly in the dashboard.</div>
+      <div class="docs-wrap">
+        <div class="docs-nav">
+          <div class="dn-sec">Contents</div>
+          <div class="dn-item on" onclick="docNav(this,'gs')">Getting started</div>
+          <div class="dn-item"    onclick="docNav(this,'filters')">Using filters</div>
+          <div class="dn-item"    onclick="docNav(this,'students')">Student list</div>
+          <div class="dn-item"    onclick="docNav(this,'profile')">Student profile</div>
+          <div class="dn-item"    onclick="docNav(this,'reports')">Downloading reports</div>
+          <div class="dn-item"    onclick="docNav(this,'cycles')">Understanding cycles</div>
+          <div class="dn-item"    onclick="docNav(this,'mobile')">Mobile vs desktop</div>
+        </div>
+        <div class="doc-body" id="docbody"></div>
+      </div>
+    </div><!-- /docs -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<div id="toast"></div>
+
+<script>
+/* ══ STUDENT DATA ══ */
+const STUDENTS = [
+  {av:'AS',name:'Arjun S.',  id:'0014',age:13,gen:'Male',  dis:'Mild ID',    comm:80,care:85,cog:44,att:82,st:'On Track'},
+  {av:'PM',name:'Priya M.',  id:'0021',age:11,gen:'Female',dis:'Moderate ID',comm:65,care:70,cog:58,att:91,st:'Excellent'},
+  {av:'RK',name:'Ravi K.',   id:'0007',age:16,gen:'Male',  dis:'Mild ID',    comm:72,care:68,cog:65,att:55,st:'On Track'},
+  {av:'DS',name:'Deepa S.',  id:'0033',age: 9,gen:'Female',dis:'Severe ID',  comm:38,care:41,cog:30,att:44,st:'Needs Support'},
+  {av:'ST',name:'Suresh T.', id:'0019',age:14,gen:'Male',  dis:'Mild ID',    comm:78,care:80,cog:70,att:88,st:'Excellent'},
+  {av:'ML',name:'Meena L.',  id:'0028',age:17,gen:'Female',dis:'Moderate ID',comm:52,care:55,cog:48,att:58,st:'On Track'},
+  {av:'AK',name:'Anita K.',  id:'0041',age: 8,gen:'Female',dis:'Mild ID',    comm:61,care:66,cog:55,att:79,st:'On Track'},
+  {av:'KV',name:'Kumar V.',  id:'0005',age:20,gen:'Male',  dis:'Moderate ID',comm:45,care:50,cog:38,att:67,st:'Needs Support'},
+];
+
+function stag(s){
+  if(s==='Excellent')     return '<span class="tag tg">Excellent</span>';
+  if(s==='Needs Support') return '<span class="tag tr">Needs Support</span>';
+  return '<span class="tag tw">On Track</span>';
+}
+
+function renderStudents(q){
+  const tbody = document.getElementById('stbody');
+  if(!tbody) return;
+  const rows = (q ? STUDENTS.filter(s=>
+    s.name.toLowerCase().includes(q.toLowerCase()) ||
+    s.id.includes(q)
+  ) : STUDENTS);
+  tbody.innerHTML = rows.map(s=>`
+    <tr onclick="openProfile('${s.av}')">
+      <td><div class="namecell"><div class="av">${s.av}</div>${s.name}</div></td>
+      <td>${s.id}</td><td>${s.age}</td><td>${s.gen}</td><td>${s.dis}</td>
+      <td>${s.comm}%</td><td>${s.care}%</td><td>${s.cog}%</td>
+      <td>${s.att}%</td><td>${stag(s.st)}</td>
+      <td><button class="btn btn-g" style="padding:3px 8px;font-size:11px"
+          onclick="event.stopPropagation();openProfile('${s.av}')">View &#8594;</button></td>
+    </tr>`).join('');
+}
+
+function filterTable(q){ renderStudents(q) }
+
+function openProfile(av){
+  const tab = document.getElementById('tab-profile');
+  tab.style.display = '';
+  tab.textContent = (STUDENTS.find(s=>s.av===av)||{name:'Student'}).name;
+  nav('profile');
+}
+
+/* ══ NAVIGATION ══ */
+const TITLES = {
+  overview:'Dashboard Overview',students:'Students',
+  progress:'Cycle Progress',attendance:'Attendance',
+  download:'Download Reports',profile:'Student Profile',docs:'Help & Documentation'
+};
+
+function nav(page){
+  // pages
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const pg = document.getElementById('page-'+page);
+  if(pg) pg.classList.add('on');
+
+  // tabs
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.classList.toggle('on', t.dataset.page===page);
+  });
+
+  // sidebar
+  document.querySelectorAll('.sb-item').forEach(i=>{
+    i.classList.toggle('on', i.dataset.page===page);
+  });
+
+  document.getElementById('pg-title').textContent = TITLES[page]||page;
+  if(page==='students') renderStudents();
+  if(page==='docs')     renderDoc('gs');
+}
+
+// wire up tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>nav(t.dataset.page));
+});
+// wire up sidebar
+document.querySelectorAll('.sb-item').forEach(i=>{
+  i.addEventListener('click',()=>nav(i.dataset.page));
+});
+
+/* ══ FILTER CHIPS ══ */
+function chipToggle(el){
+  // find all chips in the same visual group
+  const bar = el.closest('.fbar');
+  const allChips = [...bar.querySelectorAll('.chip')];
+  const idx = allChips.indexOf(el);
+  // find group boundaries (fsep elements)
+  const nodes = [...bar.children];
+  let start = 0, end = nodes.length;
+  for(let i=0;i<nodes.length;i++){
+    if(nodes[i]===el) {
+      // scan back for sep
+      for(let j=i-1;j>=0;j--){
+        if(nodes[j].classList.contains('fsep')||nodes[j].classList.contains('flabel')){start=j+1;break;}
+      }
+      // scan forward for sep
+      for(let j=i+1;j<nodes.length;j++){
+        if(nodes[j].classList.contains('fsep')||nodes[j].classList.contains('cycle-grp')){end=j;break;}
+      }
+      break;
+    }
+  }
+  const groupNodes = nodes.slice(start,end).filter(n=>n.classList.contains('chip'));
+  groupNodes.forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function cyclePick(el){
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ══ THEME ══ */
+function toggleTheme(){
+  document.documentElement.dataset.theme =
+    document.documentElement.dataset.theme==='dark' ? 'light' : 'dark';
+}
+
+/* ══ TOAST ══ */
+let _toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = '✓ '+msg;
+  el.style.display = 'block';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>{el.style.display='none'},2600);
+}
+
+/* ══ DOCS CONTENT ══ */
+const DOCS = {
+  gs:`<h2>Getting started</h2>
+<p>This dashboard helps NGO staff track, analyse and share progress data for all enrolled students across every skill cycle.</p>
+<h3>Four steps to get going</h3>
+<div class="dstep"><div class="dstep-n">1</div><div><div class="dstep-t">Pick a cycle</div><div class="dstep-d">Use the C1–C4 buttons in the filter bar to switch the reporting period. All charts update instantly.</div></div></div>
+<div class="dstep"><div class="dstep-n">2</div><div><div class="dstep-t">Apply filters</div><div class="dstep-d">Narrow the view by gender, age group, or disability type. Every chart on the page responds.</div></div></div>
+<div class="dstep"><div class="dstep-n">3</div><div><div class="dstep-t">Open a student profile</div><div class="dstep-d">Go to the Students tab and click any row to open the full individual profile.</div></div></div>
+<div class="dstep"><div class="dstep-n">4</div><div><div class="dstep-t">Download a report</div><div class="dstep-d">Use the Download tab to export PDF or Excel reports for parent meetings or internal reviews.</div></div></div>
+<div class="callout">This dashboard is desktop-only. The mobile app is for daily data entry only — it does not show attendance or download reports.</div>`,
+
+  filters:`<h2>Using filters</h2>
+<p>Filters sit in the bar below the page tabs. They apply to every chart on the current page.</p>
+<h3>Gender</h3><p>All / Male / Female. "N/A" covers students with no gender on record.</p>
+<h3>Age group</h3><p>Four bands: 6–10, 11–15, 16–18, 19–21.</p>
+<h3>Disability type</h3><p>Mild ID / Moderate ID / Severe ID — matches the NGO's assessment classification.</p>
+<h3>Cycle selector</h3><p>C1–C4 in the top-right of the filter bar. Switch cycle to reload all data for that period.</p>
+<div class="callout">Filters reset when you refresh the page. They do not save between sessions.</div>`,
+
+  students:`<h2>Student list</h2>
+<p>The Students page shows all enrolled students for the active filters.</p>
+<ul>
+  <li>Click any row to open the full student profile.</li>
+  <li>Use the search box to find by name or ID number.</li>
+  <li>Filter by domain or status to surface students needing support.</li>
+  <li>Export the full list to CSV or PDF using the top-right buttons.</li>
+</ul>
+<h3>Status tags</h3>
+<p><b>Excellent</b> — ≥75% across all domains. <b>On Track</b> — improving or stable. <b>Needs Support</b> — one or more domain below 40%.</p>`,
+
+  profile:`<h2>Student profile</h2>
+<p>Each student has a full profile with three sections.</p>
+<h3>Info panel (left column)</h3><p>Name, ID, age, disability type, centre, enrolment date, cycle attendance, overall score.</p>
+<h3>Strengths and support notes</h3><p>Teacher-written notes from the current cycle. Green = positive. Red = intervention area. These appear in the downloadable PDF report.</p>
+<h3>Charts (right column)</h3><p>Domain score bars with peer-group comparison, plus a cycle-over-cycle trend line.</p>
+<div class="callout">This dashboard is read-only. To edit scores or notes, use the data-entry app (mobile or desktop form).</div>`,
+
+  reports:`<h2>Downloading reports</h2>
+<p>Go to the Download tab. Three preset report types plus a custom builder.</p>
+<h3>Summary Report</h3><p>All students, one cohort overview page. Good for parent group meetings.</p>
+<h3>Cycle Comparison Report</h3><p>Every student's score across all cycles with trend arrows. Good for internal reviews.</p>
+<h3>Individual Student Report</h3><p>One student — scores, notes, attendance, cycle history. Hand this to a parent.</p>
+<h3>Custom builder</h3><p>Tick exactly the sections you need, then generate a single PDF or Excel file.</p>`,
+
+  cycles:`<h2>Understanding cycles</h2>
+<p>The NGO runs four quarterly teaching cycles each year.</p>
+<ul>
+  <li><b>C1</b> Jan–Mar &nbsp;|&nbsp; <b>C2</b> Apr–Jun &nbsp;|&nbsp; <b>C3</b> Jul–Sep &nbsp;|&nbsp; <b>C4</b> Oct–Dec</li>
+  <li>Scores are recorded by the assigned teacher at the end of each cycle.</li>
+  <li>The Cycle Progress page shows improvement or decline between cycles.</li>
+  <li>A student absent for an entire cycle has no score for that period — it appears as a gap in the trend chart.</li>
+</ul>`,
+
+  mobile:`<h2>Mobile vs desktop</h2>
+<p>The NGO uses a mobile app for day-to-day data entry. This desktop dashboard is the reporting layer only.</p>
+<h3>Desktop only</h3>
+<ul>
+  <li>Attendance data (hidden in mobile for privacy)</li>
+  <li>Download Reports page</li>
+  <li>All charts, trend visualisations, and the custom report builder</li>
+</ul>
+<h3>Mobile app only</h3>
+<ul>
+  <li>Skill score entry and editing</li>
+  <li>Teacher notes (positive / negative)</li>
+  <li>Basic student info lookup</li>
+</ul>
+<div class="callout">To generate a report for a parent, always use the desktop dashboard — not the mobile app.</div>`
+};
+
+function renderDoc(key){
+  document.getElementById('docbody').innerHTML = DOCS[key]||'';
+}
+function docNav(el,key){
+  document.querySelectorAll('.dn-item').forEach(i=>i.classList.remove('on'));
+  el.classList.add('on');
+  renderDoc(key);
+}
+
+/* ══ INIT ══ */
+renderStudents();
+renderDoc('gs');
+</script>
+</body>
+</html>

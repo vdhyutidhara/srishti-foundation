@@ -13,9 +13,15 @@ function getRequiredEnv(name: (typeof requiredEnvVars)[number]): string {
 function getConfig(): sql.config {
   const rawPort = process.env.DB_PORT ?? "1433";
   const port = Number.parseInt(rawPort, 10);
+  const connectionTimeout = Number.parseInt(process.env.DB_CONNECTION_TIMEOUT_MS ?? "30000", 10);
+  const requestTimeout = Number.parseInt(process.env.DB_REQUEST_TIMEOUT_MS ?? "30000", 10);
 
   if (Number.isNaN(port)) {
     throw new Error("Invalid DB_PORT. Expected a numeric port value.");
+  }
+
+  if (Number.isNaN(connectionTimeout) || Number.isNaN(requestTimeout)) {
+    throw new Error("Invalid DB timeout env vars. Expected numeric millisecond values.");
   }
 
   return {
@@ -25,9 +31,12 @@ function getConfig(): sql.config {
     user: getRequiredEnv("DB_USER"),
     password: getRequiredEnv("DB_PASSWORD"),
     options: {
-      encrypt: process.env.DB_ENCRYPT === "true",
+      // Default to encrypted connections in cloud environments unless explicitly disabled.
+      encrypt: process.env.DB_ENCRYPT !== "false",
       trustServerCertificate: true, // required for AWS RDS SQL Server (uses AWS internal CA)
     },
+    connectionTimeout,
+    requestTimeout,
     pool: {
       max: 10,
       min: 0,

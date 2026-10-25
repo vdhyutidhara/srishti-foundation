@@ -1,0 +1,35 @@
+[2026-10-25T17:03:58.350Z] [DEBUG] Successfully read package.json from project root: /Users/I747489/TEST/srishti-foundation/package.json
+[2026-10-25T17:03:58.351Z] [INFO] Using name from package.json: sristi-dashboard
+[2026-10-25T17:03:58.351Z] [DEBUG] Successfully read package.json from project root: /Users/I747489/TEST/srishti-foundation/package.json
+[2026-10-25T17:03:58.351Z] [INFO] Using version from package.json: 0.1.0
+[2026-10-25T17:03:58.351Z] [INFO] Initializing MCP Server: sristi-dashboard@0.1.0
+[2026-10-25T17:03:58.351Z] [DEBUG] Initialized ToolLoader with directory: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/tools
+[2026-10-25T17:03:58.352Z] [DEBUG] Initialized PromptLoader with directory: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/prompts
+[2026-10-25T17:03:58.352Z] [DEBUG] Initialized ResourceLoader with directory: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/resources
+[2026-10-25T17:03:58.352Z] [DEBUG] Looking for tools in: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/tools
+[2026-10-25T17:03:58.352Z] [DEBUG] Looking for prompts in: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/prompts
+[2026-10-25T17:03:58.352Z] [DEBUG] Looking for resources in: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/resources
+[2026-10-25T17:03:58.352Z] [DEBUG] Attempting to load tools from: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/tools
+[2026-10-25T17:03:58.353Z] [DEBUG] No tools directory found
+[2026-10-25T17:03:58.353Z] [DEBUG] Attempting to load prompts from: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/prompts
+[2026-10-25T17:03:58.353Z] [DEBUG] No prompts directory found
+[2026-10-25T17:03:58.353Z] [DEBUG] Attempting to load resources from: /Users/I747489/.npm/_npx/bbcce2fe225dfb22/node_modules/.bin/resources
+[2026-10-25T17:03:58.354Z] [DEBUG] No resources directory found
+[2026-10-25T17:03:58.355Z] [DEBUG] No prompts directory found
+[2026-10-25T17:03:58.355Z] [DEBUG] No resources directory found
+[2026-10-25T17:03:58.355Z] [DEBUG] Creating MCP Server instance
+[2026-10-25T17:03:58.355Z] [DEBUG] Server created with capabilities: {"tools":{"enabled":true}}
+[2026-10-25T17:03:58.356Z] [INFO] Starting transport...
+[2026-10-25T17:03:58.356Z] [DEBUG] Creating transport: stdio
+[2026-10-25T17:03:58.356Z] [INFO] Starting stdio transport
+[2026-10-25T17:03:58.356Z] [INFO] Transport connected successfully
+[2026-10-25T17:03:58.356Z] [INFO] Started sristi-dashboard@0.1.0
+[2026-10-25T17:03:58.356Z] [INFO] Transport: stdio
+[2026-10-25T17:03:58.356Z] [INFO] Server running and ready for connections
+[2026-10-25T17:03:58.359Z] [DEBUG] Transport sending message: {"jsonrpc":"2.0","id":"server-discover-probe-1","error":{"code":-32601,"message":"Method not found"}}
+[2026-10-25T17:03:58.360Z] [DEBUG] Transport sending message: {"result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{"enabled":true}},"serverInfo":{"name":"sristi-dashboard","version":"0.1.0"}},"jsonrpc":"2.0","id":0}
+[2026-10-25T17:03:58.364Z] [DEBUG] Received ListTools request: {"method":"tools/list"}
+[2026-10-25T17:03:58.364Z] [DEBUG] Found 0 tools to return
+[2026-10-25T17:03:58.364Z] [DEBUG] Tool definitions: []
+[2026-10-25T17:03:58.364Z] [DEBUG] Sending ListTools response: {"tools":[]}
+[2026-10-25T17:03:58.364Z] [DEBUG] Transport sending message: {"result":{"tools":[]},"jsonrpc":"2.0","id":1}

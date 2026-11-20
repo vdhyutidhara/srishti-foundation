@@ -1,25 +1,53 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { getSession } from "@/lib/session";
+
 
 export async function GET() {
+  const user = await getSession();
+  if (!user) return NextResponse.json({ message: "No session" }, { status: 401 });
+  if (user.role !== "director" && user.role !== "admin")
+    return NextResponse.json(
+      { message: "Catalog inspection is limited to the director and administrator." },
+      { status: 403 },
+    );
+
   try {
     const db = await getDb();
-
-    const [divisions, programs, atpDivisions, atpYears] = await Promise.all([
-      db.request().query(`SELECT DISTINCT su_division, COUNT(*) AS cnt FROM serviceuser_mstr GROUP BY su_division ORDER BY cnt DESC`),
-      db.request().query(`SELECT DISTINCT su_program, COUNT(*) AS cnt FROM serviceuser_mstr GROUP BY su_program ORDER BY cnt DESC`),
-      db.request().query(`SELECT DISTINCT atp_division, COUNT(*) AS cnt FROM atp_mstr GROUP BY atp_division ORDER BY cnt DESC`),
-      db.request().query(`SELECT DISTINCT atp_year, COUNT(*) AS cnt FROM atp_mstr GROUP BY atp_year ORDER BY atp_year DESC`),
+    const [objects, columns] = await Promise.all([
+      db.request().query(`
+        SELECT TABLE_SCHEMA AS schemaName, TABLE_NAME AS objectName, TABLE_TYPE AS objectType
+        FROM INFORMATION_SCHEMA.TABLES
+        ORDER BY TABLE_SCHEMA, TABLE_NAME`),
+      db.request().query(`
+        SELECT TABLE_SCHEMA AS schemaName, TABLE_NAME AS objectName, COLUMN_NAME AS columnName
+        FROM INFORMATION_SCHEMA.COLUMNS
+        ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION`),
     ]);
 
     return NextResponse.json({
-      su_division_values: divisions.recordset,
-      su_program_values: programs.recordset,
-      atp_division_values: atpDivisions.recordset,
-      atp_year_values: atpYears.recordset,
+      status: "discovered",
+      message: `Read ${objects.recordset.length} objects and ${columns.recordset.length} columns from the catalog. No personal records were retrieved.`,
+      objects: objects.recordset.map((o: Record<string, unknown>) => ({
+        schemaName: String(o.schemaName),
+        objectName: String(o.objectName),
+        objectType:
+          String(o.objectType) === "BASE TABLE" ? "Table" : String(o.objectType),
+      })),
+      columns: columns.recordset.map((c: Record<string, unknown>) => ({
+        schemaName: String(c.schemaName),
+        objectName: String(c.objectName),
+        columnName: String(c.columnName),
+      })),
     });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({
+      status: "unavailable",
+      message:
+        "Live connection unavailable: " +
+        message +
+        ". The dashboard needs reachable, read-only database credentials.",
+    });
   }
 }

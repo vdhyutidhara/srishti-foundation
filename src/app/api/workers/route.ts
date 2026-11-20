@@ -1,53 +1,67 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { getSession } from "@/lib/session";
+import {
+  Q,
+  parseFilters,
+  suConditions,
+  whereFrom,
+  taskDone,
+  taskOpen,
+} from "@/lib/analytics";
+import type { ConnectionPool } from "mssql";
 
-export async function GET() {
+function num(v: unknown): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+function toISO(v: unknown): string {
+  if (!v) return "";
+  const d = new Date(v as string);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+
+export async function GET(req: Request) {
+  const user = await getSession();
+  if (!user) return NextResponse.json({ message: "No session" }, { status: 401 });
+  if (user.scope !== "org")
+    return NextResponse.json({ message: "Not available for this role." }, { status: 403 });
+
+  const sp = new URL(req.url).searchParams;
+  const filters = parseFilters(sp);
+
   try {
     const db = await getDb();
-
-    const [caseload, activitySummary] = await Promise.all([
-      // Worker caseload table: caseload, visits done, pending, overdue, last activity, status
-      db.request().query(`
-        SELECT
-          t.task_owner AS worker,
-          sm.su_program AS project,
-          COUNT(DISTINCT t.task_serviceuser) AS caseload,
-          SUM(CASE WHEN t.task_status='Completed' THEN 1 ELSE 0 END) AS visits_done,
-          SUM(CASE WHEN t.task_status='Pending' AND t.task_date >= GETDATE() THEN 1 ELSE 0 END) AS pending,
-          SUM(CASE WHEN t.task_status='Pending' AND t.task_date < GETDATE() THEN 1 ELSE 0 END) AS overdue_followups,
-          MAX(CASE WHEN t.task_status='Completed' THEN t.task_date ELSE NULL END) AS last_activity,
-          COUNT(*) AS total_tasks
-        FROM task_mstr t
-        LEFT JOIN serviceuser_mstr sm ON sm.su_id = t.task_serviceuser
-        WHERE t.task_owner IS NOT NULL
-          AND YEAR(t.task_date) = YEAR(GETDATE())
-        GROUP BY t.task_owner, sm.su_program
-        ORDER BY caseload DESC
-      `),
-
-      // Activity summary per worker across all time
-      db.request().query(`
-        SELECT TOP 20
-          task_owner AS worker,
-          COUNT(*) AS total,
-          SUM(CASE WHEN task_status='Completed' THEN 1 ELSE 0 END) AS completed,
-          SUM(CASE WHEN task_status='Cancelled' THEN 1 ELSE 0 END) AS cancelled,
-          SUM(CASE WHEN task_status='Pending' AND task_date < GETDATE() THEN 1 ELSE 0 END) AS overdue,
-          MAX(task_date) AS last_task_date
-        FROM task_mstr
-        WHERE task_owner IS NOT NULL
-          AND YEAR(task_date) = YEAR(GETDATE())
-        GROUP BY task_owner
-        ORDER BY total DESC
-      `),
-    ]);
+    const q = new Q(db as ConnectionPool);
+    const base = suConditions(q, filters, user);
+    const start = q.p(new Date(filters.start));
+    const end = q.p(new Date(filters.end));
+    const res = await q.query<Record<string, unknown>>(`
+      SELECT COALESCE(u.usr_name, t.task_owner) AS worker,
+        COUNT(DISTINCT t.task_serviceuser) AS caseload,
+        SUM(CASE WHEN ${taskDone("t.")} THEN 1 ELSE 0 END) AS visits_done,
+        SUM(CASE WHEN ${taskOpen("t.")} AND t.task_date >= GETDATE() THEN 1 ELSE 0 END) AS pending,
+        SUM(CASE WHEN ${taskOpen("t.")} AND t.task_date < GETDATE() THEN 1 ELSE 0 END) AS overdue,
+        MAX(CASE WHEN ${taskDone("t.")} THEN t.task_date ELSE NULL END) AS last_activity
+      FROM task_mstr t
+      INNER JOIN serviceuser_mstr sm ON sm.su_id = t.task_serviceuser
+      LEFT JOIN User_mstr u ON u.usr_id = t.task_owner
+      ${whereFrom([...base, `t.task_owner IS NOT NULL`, `t.task_date >= ${start}`, `t.task_date < ${end}`])}
+      GROUP BY COALESCE(u.usr_name, t.task_owner)
+      ORDER BY caseload DESC`);
 
     return NextResponse.json({
-      caseload: caseload.recordset,
-      activitySummary: activitySummary.recordset,
+      workers: res.recordset.map((r) => ({
+        worker: String(r.worker ?? "Unassigned"),
+        caseload: num(r.caseload),
+        visitsDone: num(r.visits_done),
+        pending: num(r.pending),
+        overdue: num(r.overdue),
+        lastActivity: toISO(r.last_activity),
+      })),
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ message }, { status: 500 });
   }
 }

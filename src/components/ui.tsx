@@ -350,7 +350,6 @@ export interface DeliveryRow {
 export function Delivery({ rows }: { rows: DeliveryRow[] }) {
   const total = rows.reduce((n, r) => n + (r.value || 0), 0),
     colors = ["#426a50", "#d9b777", "#d8dcd3"];
-  let offset = 0;
   if (rows.some((r) => r.value === null))
     return (
       <Empty
@@ -358,6 +357,7 @@ export function Delivery({ rows }: { rows: DeliveryRow[] }) {
         text="Small groups are suppressed for this role."
       />
     );
+  const seg = (v: number | null) => (total ? ((v || 0) / total) * 289 : 0);
   return (
     <div className="delivery">
       <div className="donut">
@@ -378,9 +378,10 @@ export function Delivery({ rows }: { rows: DeliveryRow[] }) {
             strokeWidth="13"
           />
           {rows.map((r, i) => {
-            const length = total ? ((r.value || 0) / total) * 289 : 0;
-            const start = offset;
-            offset += length;
+            const length = seg(r.value);
+            const start = rows
+              .slice(0, i)
+              .reduce((s, x) => s + seg(x.value), 0);
             return (
               <circle
                 key={r.label}

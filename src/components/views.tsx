@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api, query, useResource, number, date } from "@/lib/client";
 import type { Context } from "@/lib/types";
+import { PROJECTS, projectMeta } from "@/lib/projects";
 import {
   Icon,
   Status,
@@ -235,63 +236,88 @@ export function Projects({ filters, revision, onProject, onDrill, onExport }: Co
     revision,
   );
   if (!resource.data) return <LoadState resource={resource} />;
+
+  // Keep the real (data-backed) categories, then append the documented
+  // projects that have no data mapped yet as zero "Not yet mapped" cards.
+  const real = resource.data.projects.map((p) => ({ ...p, mapped: true }));
+  const realNames = new Set(real.map((p) => p.name.toLowerCase()));
+  const placeholders = PROJECTS.filter(
+    (p) => !realNames.has(p.name.toLowerCase()),
+  ).map((p) => ({
+    id: p.id,
+    name: p.name,
+    short: p.name,
+    color: p.color,
+    description: p.description,
+    value: 0,
+    served: 0,
+    sessions: 0,
+    active: 0,
+    mapped: false,
+  }));
+  const allProjects = [...real, ...placeholders];
+
   return (
     <>
       <div className="section-label">
-        {resource.data.projects.length} projects in your selected scope{" "}
+        {real.length} recorded · {placeholders.length} awaiting source mapping{" "}
         <span>Project figures can overlap</span>
       </div>
       <div className="project-grid">
-        {resource.data.projects.map((p) => (
-          <section className="project-card" key={p.id}>
+        {allProjects.map((p) => (
+          <section
+            className={"project-card" + (p.mapped ? "" : " unmapped")}
+            key={p.id}
+          >
             <div className="project-card-top">
               <span
                 className="project-mark"
                 style={{ background: p.color + "25", color: p.color }}
               >
-                <Icon
-                  name={
-                    p.id === "farm"
-                      ? "leaf"
-                      : p.id === "school"
-                        ? "reports"
-                        : "people"
-                  }
-                  size={26}
-                />
+                <Icon name={projectMeta(p.name).icon} size={26} />
               </span>
-              <Status>Programme</Status>
+              {p.mapped ? (
+                <Status>Programme</Status>
+              ) : (
+                <Status tone="gray">Not yet mapped</Status>
+              )}
             </div>
             <h2>{p.name}</h2>
             <p>{p.description}</p>
             <div className="project-numbers">
               <div>
-                <strong>{number(p.value)}</strong>
+                <strong>{p.mapped ? number(p.value) : "—"}</strong>
                 <small>Registered</small>
               </div>
               <div>
-                <strong>{number(p.served)}</strong>
+                <strong>{p.mapped ? number(p.served) : "—"}</strong>
                 <small>Served this period</small>
               </div>
               <div>
-                <strong>{number(p.sessions)}</strong>
+                <strong>{p.mapped ? number(p.sessions) : "—"}</strong>
                 <small>Sessions completed</small>
               </div>
             </div>
             <div className="project-card-foot">
-              <span>
-                <i style={{ background: p.color }} />
-                {number(p.active)} active beneficiaries
-              </span>
-              <button
-                className="icon-button"
-                aria-label={"Open " + p.name}
-                onClick={() => onProject(p.id)}
-              >
-                <Icon name="arrow" />
-              </button>
+              {p.mapped ? (
+                <>
+                  <span>
+                    <i style={{ background: p.color }} />
+                    {number(p.active)} active beneficiaries
+                  </span>
+                  <button
+                    className="icon-button"
+                    aria-label={"Open " + p.name}
+                    onClick={() => onProject(p.id)}
+                  >
+                    <Icon name="arrow" />
+                  </button>
+                </>
+              ) : (
+                <span className="muted">No data recorded in the source yet</span>
+              )}
             </div>
-            {filters.project === p.id && (
+            {p.mapped && filters.project === p.id && (
               <div className="project-detail-actions">
                 <button
                   className="button secondary"
@@ -313,9 +339,11 @@ export function Projects({ filters, revision, onProject, onDrill, onExport }: Co
       <div className="info-note">
         <Icon name="help" size={18} />
         <p>
-          Targets and project-specific outcome indicators remain unavailable
-          until their production fields and definitions are verified. We do not
-          substitute estimated targets.
+          The six programme areas from the requirements document are shown for
+          completeness. Those marked &ldquo;Not yet mapped&rdquo; have no field
+          recorded against them in the source system; targets and
+          project-specific outcome indicators remain unavailable until their
+          production fields and definitions are verified.
         </p>
       </div>
     </>
@@ -1299,196 +1327,6 @@ export function Admin({ revision }: Context) {
   );
 }
 
-export function Connection({ revision, user }: Context) {
-  const resource = useResource<ConnData>("/api/connection", revision);
-  const [result, setResult] = useState<SchemaResult | null>(null),
-    [checking, setChecking] = useState(false),
-    [error, setError] = useState("");
-  async function inspect() {
-    setChecking(true);
-    setError("");
-    try {
-      setResult(await api<SchemaResult>("/api/schema"));
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setChecking(false);
-    }
-  }
-  return (
-    <>
-      <section className="connection-hero">
-        <div className="connection-art">
-          <Icon name="connection" size={54} />
-        </div>
-        <div>
-          <Status tone="green">Reporting environment</Status>
-          <h2>Know the source. Trust the picture.</h2>
-          <p>
-            The application reports read-only from the production database.
-            Figures are drawn live; no write operations are possible from this
-            workspace.
-          </p>
-        </div>
-        <span className="connection-lock">
-          <Icon name="shield" size={20} />
-          No production writes
-        </span>
-      </section>
-      <div className="connection-grid">
-        <Panel title="Production connection" subtitle="Server-side access only · SQL Server">
-          <div className="connection-details">
-            <div>
-              <span>Database</span>
-              <strong>sristi_foundation_tamilnadu</strong>
-            </div>
-            <div>
-              <span>Connection settings</span>
-              <Status tone={resource.data?.configured ? "green" : "gray"}>
-                {resource.data?.configured ? "Configured on server" : "Not configured"}
-              </Status>
-            </div>
-            <div>
-              <span>Reporting source</span>
-              <Status tone="green">Live reporting database</Status>
-            </div>
-            <div>
-              <span>Mobile sync status</span>
-              <strong>Unknown</strong>
-            </div>
-            <div>
-              <span>Data modifications</span>
-              <Status>Disabled</Status>
-            </div>
-          </div>
-          {!resource.data && <LoadState resource={resource} />}
-          <p className="muted connection-copy">
-            Connection credentials stay on the server. A catalog inspection
-            reads table, column and relationship metadata only; it does not
-            retrieve personal records or change the database.
-          </p>
-          <button
-            className="button primary"
-            onClick={inspect}
-            disabled={checking || user.role !== "director"}
-          >
-            <Icon name="refresh" size={16} />
-            {checking ? "Checking connection…" : "Check read-only connection"}
-          </button>
-          {user.role !== "director" && (
-            <p className="muted">
-              Connection inspection is limited to the director role.
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="error-text">
-              {error}
-            </p>
-          )}
-          {result && (
-            <div
-              className={
-                "connection-result " +
-                (result.status === "discovered" ? "success" : "")
-              }
-              role="status"
-            >
-              <Icon
-                name={result.status === "discovered" ? "check" : "alert"}
-                size={20}
-              />
-              <div>
-                <strong>
-                  {result.status === "discovered"
-                    ? "Catalog inspection complete"
-                    : "Live connection unavailable"}
-                </strong>
-                <p>{result.message}</p>
-              </div>
-            </div>
-          )}
-        </Panel>
-        <Panel title="Path to verified reporting" subtitle="Verify the source before presenting numbers">
-          <ol className="connection-steps">
-            {(
-              [
-                ["Connection", "Reach the production server with encrypted, read-only access."],
-                ["Schema discovery", "Inspect existing objects, keys and relationships."],
-                [
-                  "Verified field mapping",
-                  "Confirm beneficiary IDs, services, statuses and reporting dates.",
-                ],
-                [
-                  "Access and reconciliation",
-                  "Approve user permissions and compare totals against source reads.",
-                ],
-              ] as [string, string][]
-            ).map(([title, desc], i) => (
-              <li key={title}>
-                <span>{i + 1}</span>
-                <div>
-                  <strong>{title}</strong>
-                  <p>{desc}</p>
-                  <small>
-                    {i === 0 && resource.data?.configured
-                      ? "Configured · connectivity verified at request time"
-                      : i === 1 && result?.status === "discovered"
-                        ? "Catalog read · mapping still pending"
-                        : "Pending verification"}
-                  </small>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Panel>
-      </div>
-      {result?.objects && (
-        <Panel
-          title="Discovered catalog"
-          subtitle={
-            result.objects.length +
-            " objects · " +
-            (result.columns?.length ?? 0) +
-            " columns · metadata visibility depends on source permissions"
-          }
-        >
-          <div className="table-scroll">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Schema</th>
-                  <th>Object</th>
-                  <th>Type</th>
-                  <th>Columns</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.objects.map((o) => (
-                  <tr key={o.schemaName + "." + o.objectName}>
-                    <td>{o.schemaName}</td>
-                    <td>{o.objectName}</td>
-                    <td>{o.objectType}</td>
-                    <td>
-                      {(result.columns ?? [])
-                        .filter(
-                          (c) =>
-                            c.schemaName === o.schemaName &&
-                            c.objectName === o.objectName,
-                        )
-                        .map((c) => c.columnName)
-                        .join(", ")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-      )}
-    </>
-  );
-}
-
 interface WorkerRow {
   worker: string;
   caseload: number;
@@ -1725,5 +1563,150 @@ export function Alerts({ filters, revision, onBeneficiary }: Context) {
         onBeneficiary={onBeneficiary}
       />
     </>
+  );
+}
+
+export function Help() {
+  return (
+    <div className="help-page">
+      <Panel
+        title="How to use this dashboard"
+        subtitle="A simple guide — no computer skills needed"
+      >
+        <div className="help-content">
+          <p>
+            This dashboard is a window into the foundation&apos;s work. It shows
+            how many people you support, what services they receive, and who
+            needs attention. You can look at everything, but you{" "}
+            <strong>cannot change or delete anything</strong> here — so feel free
+            to click around. Nothing you do will harm the records.
+          </p>
+        </div>
+      </Panel>
+
+      <Panel title="Your first two minutes" subtitle="Four easy steps">
+        <ol className="connection-steps">
+          <li>
+            <span>1</span>
+            <div>
+              <strong>Choose who you are</strong>
+              <p>
+                On the first screen, pick the card that matches your role. This
+                decides what you are allowed to see.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span>2</span>
+            <div>
+              <strong>Pick what you want to look at</strong>
+              <p>
+                Use the menu on the left to move between pages — like the
+                Overview, the list of people, or the alerts.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span>3</span>
+            <div>
+              <strong>Narrow it down</strong>
+              <p>
+                Use the boxes along the top to choose a project, a time period or
+                a district. The whole page updates to match.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span>4</span>
+            <div>
+              <strong>Save or print a report</strong>
+              <p>
+                Press <strong>Export report</strong> to download an Excel or PDF
+                you can share or take to a meeting.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </Panel>
+
+      <Panel title="What each page shows" subtitle="The menu on the left">
+        <ul className="admin-governance">
+          {(
+            [
+              ["Overview", "The big picture — the main numbers, a chart of activity, and a short list of things that need attention."],
+              ["Projects", "How many people each project reaches and how many sessions have been done."],
+              ["Beneficiaries", "The list of people. You can search by name or ID and open a person to see their details."],
+              ["Worker activity", "How many people each field worker looks after, and how many visits they have done."],
+              ["Alerts & actions", "The to-do list — follow-ups that are late, records missing information, and people not seen in a while."],
+              ["Reports & explore", "Build a simple report: choose a question, see the answer, and download it."],
+            ] as [string, string][]
+          ).map(([t, d]) => (
+            <li key={t}>
+              <Icon name="check" size={16} />
+              <span>
+                <strong>{t}</strong>
+                <small>{d}</small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel title="A few handy tips" subtitle="Things that make life easier">
+        <ul className="admin-governance">
+          {(
+            [
+              ["Click a big number", "On the Overview, click any large number to see the list of people it counts."],
+              ["Open a person", "In the Beneficiaries list, click a row to open that person's page. Press the X or click outside to close it."],
+              ["Refresh", "Press Refresh (top right) to pull the very latest figures."],
+              ["Start again", "Open “More filters” and press Reset filters to clear your choices."],
+              ["Switch role", "Use the name button at the top right to sign in as a different kind of user."],
+            ] as [string, string][]
+          ).map(([t, d]) => (
+            <li key={t}>
+              <Icon name="arrow" size={16} />
+              <span>
+                <strong>{t}</strong>
+                <small>{d}</small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel
+        title="What the words mean"
+        subtitle="Plain-English meanings for the labels you&apos;ll see"
+      >
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Word</th>
+                <th>What it means</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                [
+                  ["Registered", "Everyone on the records."],
+                  ["Active", "People you are currently working with."],
+                  ["New", "People added during the time period you chose."],
+                  ["Served", "People who had at least one completed session in that period."],
+                  ["Follow-up overdue", "A planned visit or task whose date has already passed."],
+                  ["Record incomplete", "Someone whose record is missing important details."],
+                  ["Not seen in 6 months", "Someone you are still working with but haven't had a session with for half a year."],
+                ] as [string, string][]
+              ).map(([t, d]) => (
+                <tr key={t}>
+                  <td><strong>{t}</strong></td>
+                  <td>{d}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
+    </div>
   );
 }

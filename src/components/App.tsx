@@ -232,10 +232,6 @@ export default function App() {
             <small>Enabling Inclusion · Tamil Nadu</small>
           </div>
           <h1>Who&apos;s signing in?</h1>
-          <p className="login-intro">
-            Choose how you&apos;d like to use the portal. These personas control
-            what each kind of user can see across the read-only reporting data.
-          </p>
           {!booted ? (
             <p role="status" className="login-wait">
               <span className="spinner" /> Preparing the portal…
@@ -243,7 +239,6 @@ export default function App() {
           ) : (
             roleGroups.map((grp) => (
               <div className="login-group" key={grp}>
-                <div className="login-group-label">{grp}</div>
                 <div className="login-role-grid">
                   {roles
                     .filter((r) => r.group === grp)
@@ -271,10 +266,6 @@ export default function App() {
               {roleError || bootError}
             </p>
           )}
-          <div className="login-foot">
-            <Icon name="shield" size={15} />
-            <span>Read-only reporting · no source edits</span>
-          </div>
         </div>
       </div>
     );
@@ -436,13 +427,8 @@ export default function App() {
       </div>
       {roleDialog && (
         <Dialog title="Switch who you are" onClose={() => setRoleDialog(false)}>
-          <p className="dialog-intro">
-            These personas control what each kind of user can see across the
-            read-only reporting data.
-          </p>
           {roleGroups.map((grp) => (
             <div className="role-group" key={grp}>
-              <div className="role-group-label">{grp}</div>
               <div className="role-list">
                 {roles
                   .filter((r) => r.group === grp)

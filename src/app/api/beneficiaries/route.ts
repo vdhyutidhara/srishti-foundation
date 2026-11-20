@@ -1,61 +1,100 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { getSession } from "@/lib/session";
+import {
+  Q,
+  parseFilters,
+  suConditions,
+  whereFrom,
+  completeExpr,
+  metricConditions,
+  taskDone,
+} from "@/lib/analytics";
+import type { ConnectionPool } from "mssql";
+
+
+const PAGE_SIZE = 20;
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const search = searchParams.get("q") ?? "";
-  const program = searchParams.get("program") ?? "";
-  const status = searchParams.get("status") ?? "";
-  const gender = searchParams.get("gender") ?? "";
-  const age = searchParams.get("age") ?? "";
-  const page = parseInt(searchParams.get("page") ?? "1");
-  const limit = 50;
-  const offset = (page - 1) * limit;
+  const user = await getSession();
+  if (!user) return NextResponse.json({ message: "No session" }, { status: 401 });
+  if (!user.details)
+    return NextResponse.json(
+      { message: "Your role has aggregate access only." },
+      { status: 403 },
+    );
+
+  const sp = new URL(req.url).searchParams;
+  const filters = parseFilters(sp);
+  const metric = sp.get("metric") ?? "total";
+  const search = (sp.get("q") ?? "").trim();
+  const page = Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
 
   try {
     const db = await getDb();
 
-    let where = "WHERE 1=1";
-    if (search) where += ` AND (sm.su_name LIKE '%${search.replace(/'/g,"''")}%' OR sm.su_patientno LIKE '%${search.replace(/'/g,"''")}%')`;
-    if (program) where += ` AND sm.su_program = '${program.replace(/'/g,"''")}'`;
-    if (status === "active") where += ` AND sm.su_isActive=1 AND (sm.su_discharged=0 OR sm.su_discharged IS NULL)`;
-    if (status === "inactive") where += ` AND sm.su_isActive=0`;
-    if (status === "exited") where += ` AND sm.su_discharged=1`;
-    if (gender) where += ` AND sm.su_sex='${gender.replace(/'/g,"''")}' `;
-    // su_age is nvarchar and may contain "5 years" — extract leading digits first
-    const ageExpr = `TRY_CAST(LEFT(sm.su_age, PATINDEX('%[^0-9]%', sm.su_age + 'x') - 1) AS INT)`;
-    if (age === "0-5")  where += ` AND ${ageExpr} BETWEEN 0 AND 5`;
-    if (age === "6-12") where += ` AND ${ageExpr} BETWEEN 6 AND 12`;
-    if (age === "13-18") where += ` AND ${ageExpr} BETWEEN 13 AND 18`;
-    if (age === "18+") where += ` AND ${ageExpr} > 18`;
+    const buildConds = (q: Q): string[] => {
+      const c = suConditions(q, filters, user);
+      c.push(
+        ...metricConditions(
+          metric,
+          q.p(new Date(filters.start)),
+          q.p(new Date(filters.end)),
+        ),
+      );
+      if (search) {
+        const like = q.p("%" + search + "%");
+        c.push(`(sm.su_name LIKE ${like} OR sm.su_patientno LIKE ${like})`);
+      }
+      return c;
+    };
 
-    const [rows, total, programs] = await Promise.all([
-      db.request().query(`
-        SELECT sm.su_id, sm.su_patientno, sm.su_name, sm.su_sex,
-               TRY_CAST(LEFT(sm.su_age, PATINDEX('%[^0-9]%', sm.su_age + 'x') - 1) AS INT) AS su_age,
-               sm.su_disability, sm.su_program, sm.su_division, sm.su_center,
-               sm.su_village, sm.su_block, sm.su_district,
-               sm.su_dateofadmission, sm.su_isActive, sm.su_discharged,
-               sm.su_status, sm.su_owner,
-               (SELECT MAX(t.task_date) FROM task_mstr t WHERE t.task_serviceuser=sm.su_id AND t.task_status='Completed') AS last_service,
-               (SELECT TOP 1 t2.task_activity FROM task_mstr t2 WHERE t2.task_serviceuser=sm.su_id AND t2.task_status='Pending' AND t2.task_date >= GETDATE() ORDER BY t2.task_date ASC) AS next_action
-        FROM serviceuser_mstr sm
-        ${where}
-        ORDER BY sm.su_name
-        OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
-      `),
-      db.request().query(`SELECT COUNT(*) AS cnt FROM serviceuser_mstr sm ${where}`),
-      db.request().query(`SELECT DISTINCT su_program FROM serviceuser_mstr WHERE su_program IS NOT NULL ORDER BY su_program`),
+    const rowsQ = new Q(db as ConnectionPool);
+    const rowsConds = buildConds(rowsQ);
+    const rowsSql = `
+      SELECT sm.su_id, sm.su_name, sm.su_program, sm.su_district,
+             COALESCE(u.usr_name, sm.su_owner) AS su_owner,
+             CASE WHEN sm.su_isActive = 1 AND (sm.su_discharged = 0 OR sm.su_discharged IS NULL) THEN 'Active' ELSE 'Inactive' END AS status,
+             ${completeExpr()} AS complete,
+             (SELECT MAX(t.task_date) FROM task_mstr t WHERE t.task_serviceuser = sm.su_id AND ${taskDone("t.")}) AS last_service
+      FROM serviceuser_mstr sm
+      LEFT JOIN User_mstr u ON u.usr_id = sm.su_owner
+      ${whereFrom(rowsConds)}
+      ORDER BY sm.su_name
+      OFFSET ${offset} ROWS FETCH NEXT ${PAGE_SIZE} ROWS ONLY`;
+
+    const countQ = new Q(db as ConnectionPool);
+    const countConds = buildConds(countQ);
+    const countSql = `SELECT COUNT(*) AS cnt FROM serviceuser_mstr sm ${whereFrom(countConds)}`;
+
+    const [rows, total] = await Promise.all([
+      rowsQ.query(rowsSql),
+      countQ.query<{ cnt: number }>(countSql),
     ]);
 
     return NextResponse.json({
-      data: rows.recordset,
-      total: total.recordset[0].cnt,
+      rows: rows.recordset.map((r: Record<string, unknown>) => ({
+        id: String(r.su_id),
+        name: String(r.su_name ?? "Unnamed record"),
+        projects: String(r.su_program ?? "—"),
+        district: String(r.su_district ?? "—"),
+        worker: String(r.su_owner ?? "Unassigned"),
+        lastService: toISO(r.last_service),
+        status: String(r.status),
+        complete: Number(r.complete) === 1,
+      })),
+      total: Number(total.recordset[0]?.cnt ?? 0),
       page,
-      programs: programs.recordset.map((r: { su_program: string }) => r.su_program),
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ message }, { status: 500 });
   }
+}
+
+function toISO(v: unknown): string {
+  if (!v) return "";
+  const d = new Date(v as string);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }

@@ -1,21 +1,25 @@
-import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import Shell from "@/components/Shell";
-
-const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Sristi Foundation Dashboard",
-  description: "Management Dashboard",
+  title: "Sristi Foundation · Management Dashboard",
+  description:
+    "Sristi Foundation management dashboard: reach, services, follow-ups and reports.",
+  icons: { icon: "/favicon.svg" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const viewport: Viewport = {
+  themeColor: "#244b3e",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="h-full">
-        <Shell>{children}</Shell>
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

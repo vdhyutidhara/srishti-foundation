@@ -238,8 +238,8 @@ export function Projects({ filters, revision, onProject, onDrill, onExport }: Co
   return (
     <>
       <div className="section-label">
-        {resource.data.projects.length} programme groups in your selected scope{" "}
-        <span>Group figures can overlap</span>
+        {resource.data.projects.length} projects in your selected scope{" "}
+        <span>Project figures can overlap</span>
       </div>
       <div className="project-grid">
         {resource.data.projects.map((p) => (
@@ -418,6 +418,7 @@ export function Beneficiaries({
             <option value="served">Receiving services</option>
             <option value="overdue">People overdue</option>
             <option value="incomplete">Records needing attention</option>
+            <option value="noreview">Not seen in 6 months</option>
           </select>
         </label>
       </div>
@@ -749,6 +750,7 @@ interface Profile {
   registeredAt: string;
   nextReview: string;
   complete: boolean;
+  caregiver?: { mother: string; father: string; guardian: string; phone: string };
   goals: Goal[];
   assessments: Assessment[];
   followups: Followup[];
@@ -805,6 +807,32 @@ export function ProfileDialog({
               </div>
             ))}
           </div>
+          {resource.data.caregiver &&
+            (resource.data.caregiver.mother ||
+              resource.data.caregiver.father ||
+              resource.data.caregiver.guardian ||
+              resource.data.caregiver.phone) && (
+              <div className="profile-section">
+                <h3>Family / caregiver</h3>
+                <div className="profile-facts">
+                  {(
+                    [
+                      ["Mother", resource.data.caregiver.mother],
+                      ["Father", resource.data.caregiver.father],
+                      ["Guardian", resource.data.caregiver.guardian],
+                      ["Contact", resource.data.caregiver.phone],
+                    ] as [string, string][]
+                  )
+                    .filter(([, v]) => v)
+                    .map(([label, value]) => (
+                      <div key={label}>
+                        <small>{label}</small>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           {!resource.data.complete && (
             <div className="info-note warning">
               <Icon name="alert" size={18} />
@@ -1457,6 +1485,245 @@ export function Connection({ revision, user }: Context) {
           </div>
         </Panel>
       )}
+    </>
+  );
+}
+
+interface WorkerRow {
+  worker: string;
+  caseload: number;
+  visitsDone: number;
+  pending: number;
+  overdue: number;
+  lastActivity: string;
+}
+
+export function Workers({ filters, revision }: Context) {
+  const resource = useResource<{ workers: WorkerRow[] }>(
+    "/api/workers?" + query(filters),
+    revision,
+  );
+  if (!resource.data) return <LoadState resource={resource} />;
+  const rows = resource.data.workers;
+  return (
+    <>
+      <Panel
+        title="Worker activity"
+        subtitle="Caseload and visit activity for the selected period"
+      >
+        {rows.length ? (
+          <>
+            <div className="report-chart">
+              <BarList
+                rows={rows
+                  .slice(0, 8)
+                  .map((r) => ({ label: r.worker, value: r.caseload }))}
+              />
+            </div>
+            <div className="table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Worker</th>
+                    <th>Caseload</th>
+                    <th>Visits done</th>
+                    <th>Pending</th>
+                    <th>Overdue</th>
+                    <th>Last activity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.worker}>
+                      <td>
+                        <strong>{r.worker}</strong>
+                      </td>
+                      <td>{number(r.caseload)}</td>
+                      <td>{number(r.visitsDone)}</td>
+                      <td>{number(r.pending)}</td>
+                      <td>
+                        {r.overdue > 0 ? (
+                          <Status tone="amber">{number(r.overdue)}</Status>
+                        ) : (
+                          number(r.overdue)
+                        )}
+                      </td>
+                      <td>{date(r.lastActivity)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <Empty
+            title="No worker activity"
+            text="No sessions fall in the selected period and scope."
+          />
+        )}
+      </Panel>
+      <div className="info-note">
+        <Icon name="help" size={18} />
+        <p>
+          Caseload counts distinct beneficiaries with a session in the period.
+          GPS and attendance-level field tracking are shown only where the
+          source platform records them.
+        </p>
+      </div>
+    </>
+  );
+}
+
+interface AlertItem {
+  id: string;
+  personId: string;
+  person: string;
+  worker?: string;
+  detail?: string;
+  due: string;
+  days?: number;
+}
+interface AlertsData {
+  counts: {
+    overdue: number;
+    assessmentsDue: number;
+    incomplete: number;
+    expired: number;
+    noReview: number;
+  };
+  details: boolean;
+  overdue: AlertItem[];
+  assessmentsDue: AlertItem[];
+  incomplete: AlertItem[];
+  expired: AlertItem[];
+  noReview: AlertItem[];
+}
+
+function AlertSection({
+  title,
+  subtitle,
+  items,
+  details,
+  icon,
+  onBeneficiary,
+}: {
+  title: string;
+  subtitle: string;
+  items: AlertItem[];
+  details: boolean;
+  icon: string;
+  onBeneficiary: (id: string) => void;
+}) {
+  return (
+    <Panel title={title} subtitle={subtitle}>
+      {!details ? (
+        <Empty
+          title="Aggregate access"
+          text="The count is shown above. Individual records require additional permission."
+        />
+      ) : items.length ? (
+        <div className="action-list">
+          {items.map((a) => (
+            <button key={a.id} onClick={() => onBeneficiary(a.personId)}>
+              <span className="action-avatar">
+                <Icon name={icon} size={18} />
+              </span>
+              <span className="action-person">
+                <strong>{a.person}</strong>
+                <small>
+                  {[a.detail, a.worker].filter(Boolean).join(" · ") || "—"}
+                </small>
+              </span>
+              <span className="action-due">
+                {a.due ? date(a.due) : "—"}
+                {a.days !== undefined && a.days > 0 && (
+                  <Status tone="amber">{a.days}d</Status>
+                )}
+              </span>
+              <Icon name="chevron" size={16} />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <Empty title="Nothing here" text="No items match the current filters." />
+      )}
+    </Panel>
+  );
+}
+
+export function Alerts({ filters, revision, onBeneficiary }: Context) {
+  const resource = useResource<AlertsData>(
+    "/api/alerts?" + query(filters),
+    revision,
+  );
+  if (!resource.data) return <LoadState resource={resource} />;
+  const d = resource.data;
+  const tiles = [
+    { label: "Follow-ups overdue", value: d.counts.overdue },
+    { label: "Assessments due", value: d.counts.assessmentsDue },
+    { label: "Records incomplete", value: d.counts.incomplete },
+    { label: "Treatments expired", value: d.counts.expired },
+    { label: "Not seen in 6 months", value: d.counts.noReview },
+  ];
+  return (
+    <>
+      <div className="kpi-grid">
+        {tiles.map((t) => (
+          <div className="kpi-card" key={t.label}>
+            <div className="kpi-top">
+              <span className="kpi-icon">
+                <Icon name="alert" size={18} />
+              </span>
+            </div>
+            <strong className="kpi-number">{number(t.value)}</strong>
+            <span className="kpi-label">{t.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="dashboard-grid lower">
+        <AlertSection
+          title="Overdue follow-ups"
+          subtitle="Open follow-ups past their due date"
+          items={d.overdue}
+          details={d.details}
+          icon="clock"
+          onBeneficiary={onBeneficiary}
+        />
+        <AlertSection
+          title="Assessments due"
+          subtitle="Evaluations assigned over 30 days ago and not completed"
+          items={d.assessmentsDue}
+          details={d.details}
+          icon="reports"
+          onBeneficiary={onBeneficiary}
+        />
+      </div>
+      <div className="dashboard-grid lower">
+        <AlertSection
+          title="Records needing attention"
+          subtitle="Active records missing mandatory fields"
+          items={d.incomplete}
+          details={d.details}
+          icon="alert"
+          onBeneficiary={onBeneficiary}
+        />
+        <AlertSection
+          title="Expired treatment plans"
+          subtitle="Active plans past their end date"
+          items={d.expired}
+          details={d.details}
+          icon="clock"
+          onBeneficiary={onBeneficiary}
+        />
+      </div>
+      <AlertSection
+        title="Not seen recently"
+        subtitle="Active beneficiaries with no completed session in six months"
+        items={d.noReview}
+        details={d.details}
+        icon="people"
+        onBeneficiary={onBeneficiary}
+      />
     </>
   );
 }

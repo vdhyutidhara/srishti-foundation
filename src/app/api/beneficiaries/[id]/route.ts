@@ -43,6 +43,8 @@ export async function GET(
     const profile = await profileQ.query<Record<string, unknown>>(`
       SELECT su_id, su_patientno, su_name, su_sex, su_program, su_district,
              COALESCE(u.usr_name, sm.su_owner) AS su_owner,
+             sm.su_mother_name, sm.su_father_name, sm.su_parent_guardian,
+             sm.su_phone, sm.su_contactnbr,
              TRY_CAST(LEFT(su_age, PATINDEX('%[^0-9]%', su_age + 'x') - 1) AS INT) AS age,
              su_isActive, su_discharged, su_dateofadmission,
              ${completeExpr("sm.")} AS complete
@@ -105,6 +107,12 @@ export async function GET(
       registeredAt: toISO(row.su_dateofadmission),
       nextReview: pendingDates[0] ?? "",
       complete: Number(row.complete) === 1,
+      caregiver: {
+        mother: row.su_mother_name ? String(row.su_mother_name) : "",
+        father: row.su_father_name ? String(row.su_father_name) : "",
+        guardian: row.su_parent_guardian ? String(row.su_parent_guardian) : "",
+        phone: String(row.su_phone ?? row.su_contactnbr ?? "") || "",
+      },
       goals: goals.recordset.map((g) => ({
         name: String(g.tr_goal ?? "Goal"),
         total: Math.max(1, num(g.tr_target)),

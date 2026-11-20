@@ -109,6 +109,10 @@ export function whereFrom(conditions: string[]): string {
 export const taskDone = (pfx = "t.") => `${pfx}task_status = 'Closed'`;
 export const taskOpen = (pfx = "t.") => `${pfx}task_status IN ('Pending', 'Open')`;
 
+/** Active record with no completed ("Closed") session in the last `months`. */
+export const noRecentReview = (months = 6, pfx = "sm.") =>
+  `${pfx}su_isActive = 1 AND NOT EXISTS (SELECT 1 FROM task_mstr tr WHERE tr.task_serviceuser = ${pfx}su_id AND tr.task_status = 'Closed' AND tr.task_date >= DATEADD(MONTH, -${months}, GETDATE()))`;
+
 /** Extra conditions for a beneficiary-list metric (start/end already bound). */
 export function metricConditions(
   metric: string,
@@ -130,6 +134,8 @@ export function metricConditions(
       ];
     case "incomplete":
       return [`${completeExpr()} = 0`, `sm.su_isActive = 1`];
+    case "noreview":
+      return [noRecentReview(6)];
     default:
       return [];
   }

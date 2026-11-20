@@ -20,6 +20,8 @@ import {
   ProfileDialog,
   ExportDialog,
   Admin,
+  Workers,
+  Alerts,
 } from "./views";
 
 interface NavItem {
@@ -31,8 +33,10 @@ interface NavItem {
 const NAV: Record<Scope, NavItem[]> = {
   org: [
     { id: "overview", name: "Overview", icon: "overview" },
-    { id: "projects", name: "Programme groups", icon: "projects" },
+    { id: "projects", name: "Projects", icon: "projects" },
     { id: "beneficiaries", name: "Beneficiaries", icon: "people" },
+    { id: "workers", name: "Worker activity", icon: "activity" },
+    { id: "alerts", name: "Alerts & actions", icon: "alert" },
     { id: "reports", name: "Reports & explore", icon: "reports" },
     { id: "connection", name: "Data connection", icon: "connection" },
   ],
@@ -55,12 +59,20 @@ const PAGE_COPY: Record<string, { title: string; sub?: string }> = {
     sub: "Every person. Every program. One connected view.",
   },
   projects: {
-    title: "Programme groups",
-    sub: "See how each programme group is reaching and supporting people.",
+    title: "Projects",
+    sub: "See how each project is reaching and supporting people.",
   },
   beneficiaries: {
     title: "Beneficiaries",
     sub: "Find the people behind the numbers, within your permitted scope.",
+  },
+  workers: {
+    title: "Worker activity",
+    sub: "Caseload, visits and follow-ups by field worker.",
+  },
+  alerts: {
+    title: "Alerts & actions",
+    sub: "What needs attention first — overdue, due and incomplete.",
   },
   reports: {
     title: "Reports & explore",
@@ -104,7 +116,7 @@ const roles: RoleDef[] = [
     id: "director",
     group: "Management staff",
     name: "Director",
-    text: "All programme groups, profiles and reports.",
+    text: "All projects, profiles and reports.",
   },
   {
     id: "reporter",
@@ -473,6 +485,12 @@ export default function App() {
                 setSearch={setSearch}
               />
             )}
+          {user.scope === "org" && options.data?.projects && page === "workers" && (
+            <Workers {...context} />
+          )}
+          {user.scope === "org" && options.data?.projects && page === "alerts" && (
+            <Alerts {...context} />
+          )}
           {options.data?.projects && page === "reports" && user.scope === "org" && (
             <Reports {...context} />
           )}

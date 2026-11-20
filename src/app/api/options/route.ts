@@ -12,9 +12,10 @@ export async function GET() {
     const db = await getDb();
     const [programs, districts, supports, workers] = await Promise.all([
       db.request().query(
-        `SELECT LTRIM(RTRIM(su_program)) AS v, COUNT(*) AS c FROM serviceuser_mstr
-         WHERE su_program IS NOT NULL AND LTRIM(RTRIM(su_program)) <> ''
-         GROUP BY LTRIM(RTRIM(su_program)) ORDER BY c DESC`,
+        `SELECT bm.blk_name AS v, COUNT(*) AS c
+         FROM serviceuser_mstr sm
+         INNER JOIN block_mstr bm ON bm.blk_id = sm.su_block
+         GROUP BY bm.blk_name ORDER BY c DESC`,
       ),
       db.request().query(
         `SELECT DISTINCT su_district AS v FROM serviceuser_mstr

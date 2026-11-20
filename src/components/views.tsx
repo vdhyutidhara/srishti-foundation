@@ -306,44 +306,25 @@ export function Projects({ filters, revision, onProject, onDrill, onExport }: Co
                     {number(p.active)} active beneficiaries
                   </span>
                   <button
-                    className="icon-button"
-                    aria-label={"Open " + p.name}
-                    onClick={() => onProject(p.id)}
+                    className="button secondary"
+                    onClick={() => { onProject(p.id); onDrill("total"); }}
                   >
-                    <Icon name="arrow" />
+                    View beneficiaries
                   </button>
                 </>
               ) : (
                 <span className="muted">No data recorded in the source yet</span>
               )}
             </div>
-            {p.mapped && filters.project === p.id && (
-              <div className="project-detail-actions">
-                <button
-                  className="button secondary"
-                  onClick={() => onDrill("total")}
-                >
-                  View beneficiaries
-                </button>
-                <button
-                  className="button text"
-                  onClick={() => onExport("overview")}
-                >
-                  Export project report
-                </button>
-              </div>
-            )}
           </section>
         ))}
       </div>
       <div className="info-note">
         <Icon name="help" size={18} />
         <p>
-          The six programme areas from the requirements document are shown for
-          completeness. Those marked &ldquo;Not yet mapped&rdquo; have no field
-          recorded against them in the source system; targets and
-          project-specific outcome indicators remain unavailable until their
-          production fields and definitions are verified.
+          All six Sristi Foundation programme blocks are listed. Those marked
+          &ldquo;Not yet mapped&rdquo; have no records against them in the
+          source system for the selected filters.
         </p>
       </div>
     </>

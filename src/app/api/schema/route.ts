@@ -6,9 +6,9 @@ import { getSession } from "@/lib/session";
 export async function GET() {
   const user = await getSession();
   if (!user) return NextResponse.json({ message: "No session" }, { status: 401 });
-  if (user.role !== "director" && user.role !== "admin")
+  if (user.role !== "director")
     return NextResponse.json(
-      { message: "Catalog inspection is limited to the director and administrator." },
+      { message: "Catalog inspection is limited to the director." },
       { status: 403 },
     );
 

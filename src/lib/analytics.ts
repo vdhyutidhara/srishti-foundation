@@ -73,7 +73,7 @@ export function suConditions(
 ): string[] {
   const c: string[] = [];
   const program = resolvedProgram(filters, user);
-  if (program) c.push(`LTRIM(RTRIM(${pfx}su_program)) = ${q.p(program)}`);
+  if (program) c.push(`${pfx}su_block = (SELECT TOP 1 bm.blk_id FROM block_mstr bm WHERE bm.blk_name = ${q.p(program)})`);
   if (filters.district && filters.district !== "all")
     c.push(`${pfx}su_district = ${q.p(filters.district)}`);
   if (filters.status === "Active")

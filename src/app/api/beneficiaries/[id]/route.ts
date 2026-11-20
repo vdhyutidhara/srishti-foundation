@@ -41,7 +41,8 @@ export async function GET(
     const profileQ = new Q(db as ConnectionPool);
     const pid = profileQ.p(id);
     const profile = await profileQ.query<Record<string, unknown>>(`
-      SELECT su_id, su_patientno, su_name, su_sex, su_program, su_district,
+      SELECT su_id, su_patientno, su_name, su_sex, su_district,
+             bm.blk_name AS block_name,
              COALESCE(u.usr_name, sm.su_owner) AS su_owner,
              sm.su_mother_name, sm.su_father_name, sm.su_parent_guardian,
              sm.su_phone, sm.su_contactnbr,
@@ -49,6 +50,7 @@ export async function GET(
              su_isActive, su_discharged, su_dateofadmission,
              ${completeExpr("sm.")} AS complete
       FROM serviceuser_mstr sm
+      LEFT JOIN block_mstr bm ON bm.blk_id = sm.su_block
       LEFT JOIN User_mstr u ON u.usr_id = sm.su_owner
       WHERE sm.su_id = ${pid}`);
 
@@ -58,7 +60,7 @@ export async function GET(
     // Scope enforcement for programme-restricted roles.
     if (
       user.program &&
-      String(row.su_program ?? "").toLowerCase() !== user.program.toLowerCase()
+      String(row.block_name ?? "").toLowerCase() !== user.program.toLowerCase()
     )
       return NextResponse.json({ message: "Outside your scope." }, { status: 403 });
 
@@ -99,7 +101,7 @@ export async function GET(
         Number(row.su_isActive) === 1 && Number(row.su_discharged) !== 1
           ? "Active"
           : "Inactive",
-      projects: [{ short: String(row.su_program ?? "—") }],
+      projects: [{ short: String(row.block_name ?? "—") }],
       age: num(row.age),
       gender: gender(row.su_sex),
       district: String(row.su_district ?? "—"),

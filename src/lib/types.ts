@@ -1,5 +1,5 @@
-export type Scope = "org" | "system";
-export type Role = "director" | "reporter" | "admin";
+export type Scope = "org";
+export type Role = "director" | "reporter";
 
 export interface User {
   role: Role;

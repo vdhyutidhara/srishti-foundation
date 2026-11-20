@@ -107,21 +107,22 @@ async function beneficiariesData(
     conds.push(`(sm.su_name LIKE ${like} OR sm.su_patientno LIKE ${like})`);
   }
   const res = await q.query<Record<string, unknown>>(`
-    SELECT TOP 5000 sm.su_patientno, sm.su_name, sm.su_program, sm.su_district,
+    SELECT TOP 5000 sm.su_patientno, sm.su_name, bm.blk_name AS block_name, sm.su_district,
            COALESCE(u.usr_name, sm.su_owner) AS su_owner,
            CASE WHEN sm.su_isActive = 1 AND (sm.su_discharged = 0 OR sm.su_discharged IS NULL) THEN 'Active' ELSE 'Inactive' END AS status,
            CASE WHEN ${completeExpr()} = 1 THEN 'Complete' ELSE 'Incomplete' END AS completeness,
            (SELECT MAX(t.task_date) FROM task_mstr t WHERE t.task_serviceuser = sm.su_id AND ${taskDone("t.")}) AS last_service
     FROM serviceuser_mstr sm
+    LEFT JOIN block_mstr bm ON bm.blk_id = sm.su_block
     LEFT JOIN User_mstr u ON u.usr_id = sm.su_owner
     ${whereFrom(conds)} ORDER BY sm.su_name`);
   return {
     title: "Beneficiary register",
-    headers: ["ID", "Name", "Program", "District", "Worker", "Last service", "Status", "Record"],
+    headers: ["ID", "Name", "Block", "District", "Worker", "Last service", "Status", "Record"],
     rows: res.recordset.map((r) => [
       String(r.su_patientno ?? ""),
       String(r.su_name ?? ""),
-      String(r.su_program ?? ""),
+      String(r.block_name ?? ""),
       String(r.su_district ?? ""),
       String(r.su_owner ?? ""),
       toISO(r.last_service),
@@ -140,20 +141,23 @@ async function profileData(
 ): Promise<ReportPayload> {
   const q = new Q(db);
   const res = await q.query<Record<string, unknown>>(`
-    SELECT su_id, su_patientno, su_name, su_sex, su_program, su_district, su_owner,
+    SELECT su_id, su_patientno, su_name, su_sex, su_district, su_owner,
+           bm.blk_name AS block_name,
            su_age, su_isActive, su_discharged, su_dateofadmission
-    FROM serviceuser_mstr WHERE su_id = ${q.p(id)}`);
+    FROM serviceuser_mstr sm
+    LEFT JOIN block_mstr bm ON bm.blk_id = sm.su_block
+    WHERE sm.su_id = ${q.p(id)}`);
   const row = res.recordset[0];
   if (!row) throw new Error("Profile not found.");
   if (
     user.program &&
-    String(row.su_program ?? "").toLowerCase() !== user.program.toLowerCase()
+    String(row.block_name ?? "").toLowerCase() !== user.program.toLowerCase()
   )
     throw new Error("Outside your scope.");
   const rows: (string | number | null)[][] = [
     ["Beneficiary ID", String(row.su_patientno ?? row.su_id)],
     ["Name", String(row.su_name ?? "")],
-    ["Program", String(row.su_program ?? "")],
+    ["Block", String(row.block_name ?? "")],
     ["District", String(row.su_district ?? "")],
     ["Assigned worker", String(row.su_owner ?? "")],
     ["Age", String(row.su_age ?? "")],

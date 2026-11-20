@@ -9,12 +9,12 @@ export interface ProjectMeta {
 // Known programmes (su_program values in serviceuser_mstr). `id` equals the
 // program name so the UI filter value maps straight to a SQL predicate.
 export const PROJECTS: ProjectMeta[] = [
-  { id: "MTP", name: "MTP", color: "#4c7a5a", description: "Community-based mobile therapy services.", icon: "people" },
-  { id: "EIC", name: "EIC", color: "#527a9e", description: "Early Intervention Centre.", icon: "people" },
-  { id: "Sristi Village", name: "Sristi Village", color: "#6b9c4a", description: "Residential farm and inclusion community.", icon: "leaf" },
-  { id: "Special School", name: "Special School", color: "#b08848", description: "Special education programme.", icon: "reports" },
-  { id: "Jeevan", name: "Jeevan", color: "#7d6bb0", description: "Livelihood and life-skills programme.", icon: "people" },
-  { id: "Fellowship", name: "Fellowship", color: "#c2683f", description: "Inclusive fellowship programme.", icon: "people" },
+  { id: "SRISTI SPECIAL SCHOOL", name: "SRISTI SPECIAL SCHOOL", color: "#b08848", description: "Special education programme.", icon: "reports" },
+  { id: "SRISTI VILLAGE", name: "SRISTI VILLAGE", color: "#6b9c4a", description: "Residential farm and inclusion community.", icon: "leaf" },
+  { id: "SRISTI MTP MAILAM", name: "SRISTI MTP MAILAM", color: "#4c7a5a", description: "Community-based mobile therapy services.", icon: "people" },
+  { id: "SRISTI FARM ACADEMY", name: "SRISTI FARM ACADEMY", color: "#3f8f8a", description: "Farm academy programme.", icon: "leaf" },
+  { id: "SRISTI EARLY INTERVENTION CENTRE", name: "SRISTI EARLY INTERVENTION CENTRE", color: "#527a9e", description: "Early Intervention Centre.", icon: "people" },
+  { id: "SRISTI GROUP HOME FOR WOMEN", name: "SRISTI GROUP HOME FOR WOMEN", color: "#a65a7e", description: "Group home for women.", icon: "people" },
 ];
 
 const PALETTE = [

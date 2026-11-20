@@ -85,16 +85,17 @@ export async function GET(req: Request) {
       const start = q.p(new Date(filters.start));
       const end = q.p(new Date(filters.end));
       return `
-        SELECT LTRIM(RTRIM(sm.su_program)) AS program,
+        SELECT bm.blk_name AS program,
           COUNT(*) AS registered,
           SUM(CASE WHEN sm.su_isActive = 1 AND (sm.su_discharged = 0 OR sm.su_discharged IS NULL) THEN 1 ELSE 0 END) AS active,
           (SELECT COUNT(DISTINCT t.task_serviceuser) FROM task_mstr t INNER JOIN serviceuser_mstr s2 ON s2.su_id = t.task_serviceuser
-             WHERE LTRIM(RTRIM(s2.su_program)) = LTRIM(RTRIM(sm.su_program)) AND ${taskDone("t.")} AND t.task_date >= ${start} AND t.task_date < ${end}) AS served,
+             WHERE s2.su_block = sm.su_block AND ${taskDone("t.")} AND t.task_date >= ${start} AND t.task_date < ${end}) AS served,
           (SELECT COUNT(*) FROM task_mstr t2 INNER JOIN serviceuser_mstr s3 ON s3.su_id = t2.task_serviceuser
-             WHERE LTRIM(RTRIM(s3.su_program)) = LTRIM(RTRIM(sm.su_program)) AND ${taskDone("t2.")} AND t2.task_date >= ${start} AND t2.task_date < ${end}) AS sessions
+             WHERE s3.su_block = sm.su_block AND ${taskDone("t2.")} AND t2.task_date >= ${start} AND t2.task_date < ${end}) AS sessions
         FROM serviceuser_mstr sm
-        ${whereFrom([...base, `sm.su_program IS NOT NULL`, `LTRIM(RTRIM(sm.su_program)) <> ''`])}
-        GROUP BY LTRIM(RTRIM(sm.su_program))
+        INNER JOIN block_mstr bm ON bm.blk_id = sm.su_block
+        ${whereFrom([...base, `sm.su_block IS NOT NULL`])}
+        GROUP BY bm.blk_name, sm.su_block
         ORDER BY registered DESC`;
     });
 

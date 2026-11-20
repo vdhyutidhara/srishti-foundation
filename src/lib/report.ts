@@ -31,6 +31,10 @@ const AGE_CASE = (pfx: string) => {
 const GENDER_CASE = (pfx: string) =>
   `CASE WHEN ${pfx}su_sex LIKE 'F%' THEN 'Female' WHEN ${pfx}su_sex LIKE 'M%' THEN 'Male' ELSE 'Other' END`;
 
+function groupJoin(group: string): string {
+  return group === "project" ? "LEFT JOIN block_mstr bm ON bm.blk_id = sm.su_block" : "";
+}
+
 function groupExpr(group: string, pfx = "sm."): string {
   switch (group) {
     case "district": return `${pfx}su_district`;
@@ -38,7 +42,7 @@ function groupExpr(group: string, pfx = "sm."): string {
     case "age": return AGE_CASE(pfx);
     case "type": return "t.task_activity";
     case "month": return "FORMAT(t.task_date, 'yyyy-MM')";
-    default: return `LTRIM(RTRIM(${pfx}su_program))`;
+    default: return `bm.blk_name`;
   }
 }
 
@@ -100,6 +104,7 @@ export async function buildReport(
     const res = await q.query<Record<string, unknown>>(`
       SELECT ${ge} AS g, COUNT(*) AS v
       FROM task_mstr t INNER JOIN serviceuser_mstr sm ON sm.su_id = t.task_serviceuser
+      ${groupJoin(grp)}
       ${whereFrom([...base, `${taskDone("t.")}`, `t.task_date >= ${start}`, `t.task_date < ${end}`])}
       GROUP BY ${ge} ORDER BY v DESC`);
     return {
@@ -117,6 +122,7 @@ export async function buildReport(
     const res = await q.query<Record<string, unknown>>(`
       SELECT ${ge} AS g, COUNT(DISTINCT t.task_serviceuser) AS v
       FROM task_mstr t INNER JOIN serviceuser_mstr sm ON sm.su_id = t.task_serviceuser
+      ${groupJoin(group)}
       ${whereFrom([...base, `${taskOpen("t.")}`, `t.task_date < GETDATE()`])}
       GROUP BY ${ge} ORDER BY v DESC`);
     return {
@@ -134,6 +140,7 @@ export async function buildReport(
     const res = await q.query<Record<string, unknown>>(`
       SELECT ${ge} AS g, COUNT(*) AS v
       FROM serviceuser_mstr sm
+      ${groupJoin(group)}
       ${whereFrom([...base, `${completeExpr()} = 0`, `sm.su_isActive = 1`])}
       GROUP BY ${ge} ORDER BY v DESC`);
     return {
@@ -171,6 +178,7 @@ export async function buildReport(
   const res = await q.query<Record<string, unknown>>(`
     SELECT ${ge} AS g, ${measureExpr} AS v
     FROM serviceuser_mstr sm
+    ${groupJoin(group)}
     ${whereFrom(base)}
     GROUP BY ${ge} ORDER BY v DESC`);
   return {

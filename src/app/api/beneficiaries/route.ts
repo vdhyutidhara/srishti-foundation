@@ -53,12 +53,13 @@ export async function GET(req: Request) {
     const rowsQ = new Q(db as ConnectionPool);
     const rowsConds = buildConds(rowsQ);
     const rowsSql = `
-      SELECT sm.su_id, sm.su_name, sm.su_program, sm.su_district,
+      SELECT sm.su_id, sm.su_name, bm.blk_name AS block_name, sm.su_district,
              COALESCE(u.usr_name, sm.su_owner) AS su_owner,
              CASE WHEN sm.su_isActive = 1 AND (sm.su_discharged = 0 OR sm.su_discharged IS NULL) THEN 'Active' ELSE 'Inactive' END AS status,
              ${completeExpr()} AS complete,
              (SELECT MAX(t.task_date) FROM task_mstr t WHERE t.task_serviceuser = sm.su_id AND ${taskDone("t.")}) AS last_service
       FROM serviceuser_mstr sm
+      LEFT JOIN block_mstr bm ON bm.blk_id = sm.su_block
       LEFT JOIN User_mstr u ON u.usr_id = sm.su_owner
       ${whereFrom(rowsConds)}
       ORDER BY sm.su_name
@@ -77,7 +78,7 @@ export async function GET(req: Request) {
       rows: rows.recordset.map((r: Record<string, unknown>) => ({
         id: String(r.su_id),
         name: String(r.su_name ?? "Unnamed record"),
-        projects: String(r.su_program ?? "—"),
+        projects: String(r.block_name ?? "—"),
         district: String(r.su_district ?? "—"),
         worker: String(r.su_owner ?? "Unassigned"),
         lastService: toISO(r.last_service),

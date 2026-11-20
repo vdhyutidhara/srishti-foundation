@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
-export type Scope = "org" | "system";
-export type Role = "director" | "reporter" | "admin";
+export type Scope = "org";
+export type Role = "director" | "reporter";
 
 export interface SessionUser {
   role: Role;
@@ -9,7 +9,7 @@ export interface SessionUser {
   label: string;
   scope: Scope;
   details: boolean;
-  /** Forced su_program restriction for scoped roles, else null. */
+  /** Forced block restriction for scoped roles, else null. */
   program: string | null;
 }
 
@@ -27,13 +27,6 @@ const DEFS: Record<Role, Omit<SessionUser, "role">> = {
     name: "Reporting officer",
     label: "Aggregate reporting",
     scope: "org",
-    details: false,
-    program: null,
-  },
-  admin: {
-    name: "System administrator",
-    label: "Platform administration",
-    scope: "system",
     details: false,
     program: null,
   },

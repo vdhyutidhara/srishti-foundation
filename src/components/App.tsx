@@ -8,7 +8,6 @@ import type {
   Context,
   ExportReport,
   Role,
-  Scope,
 } from "@/lib/types";
 import { Icon, Dialog, LoadState } from "./ui";
 import {
@@ -18,7 +17,6 @@ import {
   Reports,
   ProfileDialog,
   ExportDialog,
-  Admin,
   Workers,
   Alerts,
   Help,
@@ -30,31 +28,20 @@ interface NavItem {
   icon: string;
 }
 
-const NAV: Record<Scope, NavItem[]> = {
-  org: [
-    { id: "overview", name: "Overview", icon: "overview" },
-    { id: "projects", name: "Projects", icon: "projects" },
-    { id: "beneficiaries", name: "Beneficiaries", icon: "people" },
-    { id: "workers", name: "Worker activity", icon: "activity" },
-    { id: "alerts", name: "Alerts & actions", icon: "alert" },
-    { id: "reports", name: "Reports & explore", icon: "reports" },
-  ],
-  system: [
-    { id: "admin", name: "System", icon: "home" },
-    { id: "roles", name: "Access & roles", icon: "shield" },
-  ],
-};
+const NAV: NavItem[] = [
+  { id: "overview", name: "Overview", icon: "overview" },
+  { id: "projects", name: "Projects", icon: "projects" },
+  { id: "beneficiaries", name: "Beneficiaries", icon: "people" },
+  { id: "workers", name: "Worker activity", icon: "activity" },
+  { id: "alerts", name: "Alerts & actions", icon: "alert" },
+  { id: "reports", name: "Reports & explore", icon: "reports" },
+];
 
-const WORKSPACE_LABEL: Record<Scope, string> = {
-  org: "MANAGEMENT WORKSPACE",
-  system: "ADMINISTRATION",
-};
-
-const navFor = (user: User | null) => NAV[user?.scope ?? "org"] || NAV.org;
+const navFor = (_user: User | null) => NAV;
 
 const PAGE_COPY: Record<string, { title: string; sub?: string }> = {
   overview: {
-    title: "A clearer picture of your impact.",
+    title: "Overview",
     sub: "Every person. Every program. One connected view.",
   },
   projects: {
@@ -123,19 +110,12 @@ const roles: RoleDef[] = [
     name: "Reporting officer",
     text: "Aggregate views and reports. No profiles.",
   },
-  {
-    id: "admin",
-    group: "Administration",
-    name: "System administrator",
-    text: "System health and access. No beneficiary records.",
-  },
 ];
-const roleGroups = ["Management staff", "Administration"];
+const roleGroups = ["Management staff"];
 
 const AVATAR: Record<string, string> = {
   director: "SD",
   reporter: "RO",
-  admin: "AD",
 };
 
 export default function App() {
@@ -317,7 +297,7 @@ export default function App() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="brand-logo" src="/sristi-logo.jpg" alt="Sristi Foundation" />
         </a>
-        <div className="workspace-label">{WORKSPACE_LABEL[user.scope]}</div>
+        <div className="workspace-label">MANAGEMENT WORKSPACE</div>
         <nav aria-label="Main navigation">
           {navFor(user).map((p) => (
             <button
@@ -383,7 +363,7 @@ export default function App() {
               <p>{(PAGE_COPY[page] || {}).sub}</p>
             </div>
             <div className="heading-actions">
-              {!["admin", "roles", "help"].includes(page) && (
+              {!["help"].includes(page) && (
                 <button
                   className="button secondary refresh-button"
                   onClick={() => setRevision((n) => n + 1)}
@@ -412,6 +392,7 @@ export default function App() {
           </div>
           {user.scope === "org" &&
             page !== "help" &&
+            page !== "projects" &&
             (options.loading || options.error ? (
               <LoadState resource={options} />
             ) : (
@@ -427,7 +408,7 @@ export default function App() {
           {user.scope === "org" && options.data?.projects && page === "overview" && (
             <Overview {...context} />
           )}
-          {user.scope === "org" && options.data?.projects && page === "projects" && (
+          {user.scope === "org" && page === "projects" && (
             <Projects {...context} />
           )}
           {user.scope === "org" &&
@@ -449,9 +430,6 @@ export default function App() {
           )}
           {options.data?.projects && page === "reports" && user.scope === "org" && (
             <Reports {...context} />
-          )}
-          {(page === "admin" || page === "roles") && user.scope === "system" && (
-            <Admin {...context} />
           )}
           {page === "help" && user.scope === "org" && <Help />}
         </main>

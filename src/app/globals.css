@@ -2734,3 +2734,32 @@ main {
     transform: rotate(90deg);
   }
 }
+
+/* Projects awaiting source mapping (documented but no data) */
+.project-card.unmapped {
+  border-style: dashed;
+  background: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 10px,
+      rgba(124, 133, 123, 0.04) 10px,
+      rgba(124, 133, 123, 0.04) 20px
+    ),
+    #fff;
+}
+.project-card.unmapped h2,
+.project-card.unmapped .project-numbers strong {
+  color: var(--muted);
+}
+
+/* Help / documentation page */
+.help-page { display: grid; gap: 16px; max-width: 920px; }
+.help-page .help-content p { margin: 0 0 10px; line-height: 1.6; }
+.help-page .help-content h3 { margin: 14px 0 4px; }
+
+/* Help page list spacing — more room between rows and title/description */
+.help-page .admin-governance { gap: 18px; padding-left: 10px; padding-bottom: 10px; }
+.help-page .admin-governance li { gap: 13px; align-items: flex-start; }
+.help-page .admin-governance li svg { margin-top: 1px; flex-shrink: 0; }
+.help-page .admin-governance strong { margin-bottom: 4px; font-size: 13.5px; }
+.help-page .admin-governance small { line-height: 1.55; }

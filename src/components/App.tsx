@@ -10,18 +10,18 @@ import type {
   Role,
   Scope,
 } from "@/lib/types";
-import { Icon, Dialog, Status, LoadState } from "./ui";
+import { Icon, Dialog, LoadState } from "./ui";
 import {
   Overview,
   Projects,
   Beneficiaries,
   Reports,
-  Connection,
   ProfileDialog,
   ExportDialog,
   Admin,
   Workers,
   Alerts,
+  Help,
 } from "./views";
 
 interface NavItem {
@@ -38,7 +38,6 @@ const NAV: Record<Scope, NavItem[]> = {
     { id: "workers", name: "Worker activity", icon: "activity" },
     { id: "alerts", name: "Alerts & actions", icon: "alert" },
     { id: "reports", name: "Reports & explore", icon: "reports" },
-    { id: "connection", name: "Data connection", icon: "connection" },
   ],
   system: [
     { id: "admin", name: "System", icon: "home" },
@@ -78,13 +77,13 @@ const PAGE_COPY: Record<string, { title: string; sub?: string }> = {
     title: "Reports & explore",
     sub: "Your questions, answered. No dashboard-building skills needed.",
   },
-  connection: {
-    title: "Data connection",
-    sub: "A transparent view of where your information comes from.",
-  },
   admin: {
     title: "System",
     sub: "Keep the platform healthy and access rules sound.",
+  },
+  help: {
+    title: "How to use this dashboard",
+    sub: "A simple guide for everyday use — no computer skills needed.",
   },
   roles: {
     title: "Access & roles",
@@ -149,7 +148,6 @@ export default function App() {
   const [filters, setFilters] = useState<FiltersType>(initialFilters),
     [revision, setRevision] = useState(0),
     [roleDialog, setRoleDialog] = useState(false),
-    [help, setHelp] = useState(false),
     [navOpen, setNavOpen] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null),
     [exportSpec, setExportSpec] = useState<{
@@ -334,28 +332,16 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="sidebar-note">
-          <div className="note-art">
-            <Icon name="leaf" size={56} />
-          </div>
-          <span>ROOTED IN INCLUSION</span>
-          <h3>
-            Small steps.
-            <br />
-            Meaningful change.
-          </h3>
-          <p>A shared view of the people and programs that matter.</p>
-        </div>
         {user.scope === "org" && (
-          <button className="nav-item help-button" onClick={() => setHelp(true)}>
+          <button
+            className={"nav-item help-button " + (page === "help" ? "selected" : "")}
+            aria-current={page === "help" ? "page" : undefined}
+            onClick={() => go("help")}
+          >
             <Icon name="help" />
             Help & guidance
           </button>
         )}
-        <div className="sidebar-bottom">
-          <Icon name="shield" size={16} />
-          <span>Read-only reporting</span>
-        </div>
       </aside>
       <div className="main-shell">
         <header className="topbar">
@@ -370,24 +356,11 @@ export default function App() {
             <span>Workspace</span>
             <Icon name="chevron" size={14} />
             <strong>
-              {(navFor(user).find((p) => p.id === page) || navFor(user)[0]).name}
+              {navFor(user).find((p) => p.id === page)?.name ||
+                (page === "help" ? "Help & guidance" : navFor(user)[0].name)}
             </strong>
           </div>
           <div className="topbar-actions">
-            {user.scope === "org" && (
-              <button
-                className="top-search"
-                onClick={() => {
-                  go("beneficiaries");
-                  setSearch("");
-                }}
-                disabled={!user.details}
-              >
-                <Icon name="search" size={17} />
-                <span>Find a beneficiary</span>
-              </button>
-            )}
-            <Status tone="green">Live reporting</Status>
             <button
               className="user-menu"
               onClick={() => setRoleDialog(true)}
@@ -403,23 +376,6 @@ export default function App() {
           </div>
         </header>
         <main id="main-content">
-          <div className="demo-banner">
-            <Icon name="shield" size={17} />
-            <span>
-              <strong>Read-only reporting.</strong> Figures are drawn live from
-              the reporting database. No write operations are possible here.
-            </span>
-            {user.scope === "org" && (
-              <button onClick={() => go("connection")}>
-                Connection status <Icon name="arrow" size={15} />
-              </button>
-            )}
-            {user.scope === "system" && (
-              <button onClick={() => go("admin")}>
-                System status <Icon name="arrow" size={15} />
-              </button>
-            )}
-          </div>
           <div className="page-heading">
             <div>
               <div className="eyebrow">SRISTI FOUNDATION · TAMIL NADU</div>
@@ -427,7 +383,7 @@ export default function App() {
               <p>{(PAGE_COPY[page] || {}).sub}</p>
             </div>
             <div className="heading-actions">
-              {!["connection", "admin", "roles"].includes(page) && (
+              {!["admin", "roles", "help"].includes(page) && (
                 <button
                   className="button secondary refresh-button"
                   onClick={() => setRevision((n) => n + 1)}
@@ -437,7 +393,7 @@ export default function App() {
                 </button>
               )}
               {user.scope === "org" &&
-                !["connection", "reports"].includes(page) && (
+                !["reports", "help"].includes(page) && (
                   <button
                     className="button primary"
                     onClick={() =>
@@ -455,7 +411,7 @@ export default function App() {
             </div>
           </div>
           {user.scope === "org" &&
-            !["connection"].includes(page) &&
+            page !== "help" &&
             (options.loading || options.error ? (
               <LoadState resource={options} />
             ) : (
@@ -494,19 +450,10 @@ export default function App() {
           {options.data?.projects && page === "reports" && user.scope === "org" && (
             <Reports {...context} />
           )}
-          {page === "connection" && user.scope === "org" && (
-            <Connection {...context} />
-          )}
           {(page === "admin" || page === "roles") && user.scope === "system" && (
             <Admin {...context} />
           )}
-          <footer className="page-footer">
-            <span>
-              <i />
-              Sristi Foundation · {WORKSPACE_LABEL[user.scope].toLowerCase()}
-            </span>
-            <span>Live reporting · source sync status: unknown</span>
-          </footer>
+          {page === "help" && user.scope === "org" && <Help />}
         </main>
       </div>
       {roleDialog && (
@@ -547,34 +494,6 @@ export default function App() {
               {roleError}
             </p>
           )}
-        </Dialog>
-      )}
-      {help && (
-        <Dialog title="Your management workspace" onClose={() => setHelp(false)}>
-          <div className="help-content">
-            <h3>Start with a question</h3>
-            <p>
-              Choose a project, period or location. Open a KPI to review the
-              people behind that count, or use Reports & explore to choose a
-              prepared report and breakdown.
-            </p>
-            <h3>Understand the dates</h3>
-            <p>
-              Registered and active counts describe current totals. New
-              registrations and completed services use the selected period. The
-              six-month chart is clearly labelled as separate context.
-            </p>
-            <h3>Take a report to your meeting</h3>
-            <p>
-              Preview an Excel or PDF report. Both use your current filters and
-              permissions.
-            </p>
-            <h3>Keep source records safe</h3>
-            <p>
-              This app has no source-record editing actions. It reports
-              read-only from the production database.
-            </p>
-          </div>
         </Dialog>
       )}
       {profileId && (
